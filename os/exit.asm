@@ -12,12 +12,18 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
+if ~used @os.exit.loaded;
+@os.exit.loaded = 1;
+
+; ---   *   ---   *   ---
+; s-consts
+
 OK    = $00;
 WARN  = $FD;
 ERROR = $FE;
 FATAL = $FF;
 
-linux.exit = $3C;
+linux.exit.id = $3C;
 
 
 ; ---   *   ---   *   ---
@@ -32,17 +38,15 @@ include "../macro/elf.inc";
 
 ELF %:os;
 
-define VERSION v0.00.1b;
-define AUTHOR  IBN-3DILA;
+define VERSION v0.00.2a;
+define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
 ; EXE
 
-fragment *:exe;
-
-public exit;
-  mov rax,linux.exit;
+fragment *:public exit;
+  mov rax,linux.exit.id;
   syscall;
 
 
@@ -51,11 +55,12 @@ public exit;
 
 fragment.end;
 
-else if ~ defined HEADLESS;
+else if ~defined HEADLESS;
   extrn exit;
 
 end if; IMPORT
 ELF.end;
 
+end if; loaded
 
 ; ---   *   ---   *   ---

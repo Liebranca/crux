@@ -12,7 +12,7 @@
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.1b;
+define VERSION v0.00.1a;
 define AUTHOR  'IBN-3DILA';
 
 

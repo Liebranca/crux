@@ -10,18 +10,18 @@
 ; lyeb,
 
 ; ---   *   ---   *   ---
-; deps
+; HEAD
 
-if ~ defined @elf.loaded;
+if ~used @elf.loaded;
+@elf.loaded = 1;
 
 include "uid.inc";
-define  @elf.loaded;
 
 
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.1b;
+define VERSION v0.00.1a;
 define AUTHOR  'IBN-3DILA';
 
 
@@ -36,11 +36,23 @@ macro @elf.rdline dst,line,prefix= {
   ok equ 0;
 
 
-  ; has name
-  match any symbol =: name , dst line \{
+  ; public+name
+  match any symbol =: =public name , dst line \{
 
-    any\#.sym  equ symbol;
-    any\#.name equ name;
+    any\#.sym    equ symbol;
+    any\#.name   equ name;
+    any\#.public equ 1;
+
+    ok equ 1;
+
+  \};
+
+  ; ^name only
+  match =0 any symbol =: name , ok dst line \{
+
+    any\#.sym    equ symbol;
+    any\#.name   equ name;
+    any\#.public equ 0;
 
     ok equ 1;
 
@@ -49,7 +61,8 @@ macro @elf.rdline dst,line,prefix= {
   ; ^anon
   match =0 any symbol , ok dst line \{
 
-    any\#.sym equ symbol;
+    any\#.sym    equ symbol;
+    any\#.public equ 0;
     ok equ 1;
 
     match have , prefix \\{
@@ -96,11 +109,12 @@ macro ELF line {
   match =% , ice#.sym \{
 
     ; run only once
-    match , @elf.loaded @elf.ff \\{
+    if ~defined @elf.ffx;
       format ELF64;
-      define @elf.ff 0;
 
-    \\};
+      @elf.ff = 0;
+
+    end if;
 
     ok equ 1;
 
@@ -110,12 +124,13 @@ macro ELF line {
   match =* , ice#.sym \{
 
     ; run only once
-    match , @elf.loaded \\{
+    if ~defined @elf.ffx;
       format ELF64 executable 3;
-      define @elf.ff 1;
       entry  _start;
 
-    \\};
+      @elf.ff = 1;
+
+    end if;
 
     ok equ 1;
 
@@ -137,7 +152,7 @@ macro ELF line {
   \}
 
   ; stop format line from being set again!
-  define @elf.loaded 1;
+  define @elf.ffx 'LOCKED';
 
 };
 
@@ -186,7 +201,6 @@ macro fragment line {
   ; fstate
   local ice;
   local type;
-  local dir.name;
   local dir.args;
   local ok;
   ok equ 0;
@@ -235,32 +249,25 @@ macro fragment line {
   \};
 
 
-  ; modify directive accto ff
-  match =0 , @elf.ff \{
-    dir.name equ section;
-
-  \}
-
-  match =1 , @elf.ff \{
-    dir.name equ segment;
-    dir.args equ;
-
-    type equ readable type;
-
-  \}
-
-
-  ; make segment with label!
+  ; close previous and make new segment
   fragment.end;
-  dir.name dir.args type;
 
-  ; label uses namespace?
+  if @elf.ff = 0;
+    section dir.args type;
+
+  else if @elf.ff = 1;
+    segment readable type;
+
+  end if;
+
+
+  ; make label with namespace?
   match namespace name , @elf.namespace ice#.name \{
 
     define @elf.cblk namespace\#.\#name;
 
     ; make global and local symbols
-    @elf.cblk#:
+    @elf.symbol @elf.cblk;
     name = @elf.cblk;
 
   \}
@@ -268,7 +275,29 @@ macro fragment line {
   ; ^no namespace, make local only!
   match , @elf.namespace \{
     define @elf.cblk ice#.name;
-    ice#.name#:
+    @elf.symbol ice#.name;
+
+  \}
+
+  match =1 name , ice#.public ice#.name \{
+    public name;
+
+  \}
+
+};
+
+
+; ---   *   ---   *   ---
+; make symbol!
+
+macro @elf.symbol fullname {
+
+  match any , fullname \{
+    if ~defined SYMBOL.\#any;
+      define SYMBOL.\#any 1;
+      any\#:
+
+    end if;
 
   \}
 
@@ -286,8 +315,8 @@ macro @elf.rmlis line {
 
 macro @elf.public line {
   match key name namespace , line @elf.namespace \{
-    @elf.rmlis key namespace\#.\#name;
-    namespace\#.\#name\#:
+    @elf.rmlis  key namespace\#.\#name;
+    @elf.symbol namespace\#.\#name;
 
   \};
 
@@ -308,7 +337,7 @@ extrn  fix @elf.extrn  extrn;
 ; ---   *   ---   *   ---
 ; FOOT
 
-end if; @elf.loaded
+end if; loaded
 
 
 ; ---   *   ---   *   ---
