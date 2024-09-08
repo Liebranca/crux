@@ -13,4 +13,12 @@ fragment *:_start;
   mov  rdi,FATAL;
   call os.exit;
 
+
+; ---   *   ---   *   ---
+; FOOT
+
+fragment.end;
+ELF.end;
+
+
 ; ---   *   ---   *   ---

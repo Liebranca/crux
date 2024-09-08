@@ -44,6 +44,8 @@ define AUTHOR  'IBN-3DILA';
 
 ; ---   *   ---   *   ---
 ; EXE
+;
+; [0] rdi -> exit code
 
 fragment *:public exit;
   mov rax,linux.exit.id;
@@ -62,5 +64,6 @@ end if; IMPORT
 ELF.end;
 
 end if; loaded
+
 
 ; ---   *   ---   *   ---

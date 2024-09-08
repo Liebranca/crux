@@ -1,5 +1,5 @@
 ; ---   *   ---   *   ---
-; STD UINT
+; UINT
 ; No signs here
 ;
 ; LIBRE SOFTWARE
@@ -14,6 +14,7 @@
 
 if ~used @std.uint.loaded;
 @std.uint.loaded = 1;
+
 
 ; ---   *   ---   *   ---
 ; get size constants for pow2
@@ -55,14 +56,14 @@ macro @uint.genp2_bat [line] {
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined \IMPORT;
+if ~defined IMPORT;
 include "../macro/elf.inc";
 
 
 ; ---   *   ---   *   ---
 ; info
 
-ELF %:std;
+ELF %:uint;
 
 define VERSION v0.00.1a;
 define AUTHOR  'IBN-3DILA';
@@ -70,15 +71,13 @@ define AUTHOR  'IBN-3DILA';
 
 ; ---   *   ---   *   ---
 ; EXE
-
-fragment *:uint;
-
-
-; ---   *   ---   *   ---
+;
+; rounded-up division by a power of 2
+;
 ; [0] rdi -> X to align
 ; [1] cl  -> exponent
 
-public urdivp2;
+fragment *:public urdivp2;
 
 
   ; get 2^N thru shift
@@ -111,5 +110,6 @@ end if; IMPORT
 ELF.end;
 
 end if; loaded
+
 
 ; ---   *   ---   *   ---

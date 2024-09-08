@@ -27,7 +27,12 @@ fragment *:_start;
   mov  rdi,OK;
   call os.exit;
 
+
+; ---   *   ---   *   ---
+; FOOT
+
 fragment.end;
 ELF.end;
+
 
 ; ---   *   ---   *   ---

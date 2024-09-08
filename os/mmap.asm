@@ -15,6 +15,7 @@
 if ~used @os.mmap.loaded;
 @os.mmap.loaded = 1;
 
+
 ; ---   *   ---   *   ---
 ; s-consts
 
@@ -55,7 +56,7 @@ define AUTHOR  'IBN-3DILA';
 ; ---   *   ---   *   ---
 ; EXE
 ;
-; [0]:rdi -> size in bytes
+; [0] rdi -> size in bytes
 
 fragment *:public mmap;
 
@@ -120,5 +121,6 @@ end if; IMPORT
 ELF.end;
 
 end if; loaded
+
 
 ; ---   *   ---   *   ---
