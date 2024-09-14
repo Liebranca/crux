@@ -63,21 +63,25 @@ include "../macro/elf.inc";
 ; ---   *   ---   *   ---
 ; info
 
-ELF %:uint;
+ELF %;
 
-define VERSION v0.00.1a;
+define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
 ; EXE
-;
+
+fragment *;
+
+
+; ---   *   ---   *   ---
 ; rounded-up division by a power of 2
 ;
 ; [0] rdi -> X to align
 ; [1] cl  -> exponent
 
-fragment *:public urdivp2;
+public urdivp2;
 
 
   ; get 2^N thru shift
@@ -101,14 +105,10 @@ fragment *:public urdivp2;
 ; ---   *   ---   *   ---
 ; FOOT
 
-fragment.end;
-
 else if ~defined HEADLESS;
   extrn urdivp2;
 
 end if; IMPORT
-ELF.end;
-
 end if; loaded
 
 

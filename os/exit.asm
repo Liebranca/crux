@@ -36,7 +36,7 @@ include "../macro/elf.inc";
 ; ---   *   ---   *   ---
 ; info
 
-ELF %:os;
+ELF %;
 
 define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
@@ -44,10 +44,19 @@ define AUTHOR  'IBN-3DILA';
 
 ; ---   *   ---   *   ---
 ; EXE
+
+fragment *;
+
+
+; ---   *   ---   *   ---
+; end program
 ;
 ; [0] rdi -> exit code
 
-fragment *:public exit;
+public exit;
+
+  ; TODO: 'onexit' callback list
+
   mov rax,linux.exit.id;
   syscall;
 
@@ -55,14 +64,10 @@ fragment *:public exit;
 ; ---   *   ---   *   ---
 ; FOOT
 
-fragment.end;
-
 else if ~defined HEADLESS;
   extrn exit;
 
 end if; IMPORT
-ELF.end;
-
 end if; loaded
 
 

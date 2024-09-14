@@ -47,18 +47,24 @@ include "../std/uint.asm";
 ; ---   *   ---   *   ---
 ; info
 
-ELF %:os;
+ELF %;
 
-define VERSION v0.00.1a;
+define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
 ; EXE
+
+fragment *;
+
+
+; ---   *   ---   *   ---
+; get block of memory
 ;
 ; [0] rdi -> size in bytes
 
-fragment *:public mmap;
+public mmap;
 
 
   ; preserve
@@ -66,7 +72,7 @@ fragment *:public mmap;
 
   ; align input to page size
   mov  cl,sizep2.page;
-  call std.urdivp2;
+  call urdivp2;
 
   shl  rax,cl;
   mov  rsi,rax;
@@ -111,15 +117,11 @@ public munmap;
 ; ---   *   ---   *   ---
 ; FOOT
 
-fragment.end;
-
 else if ~defined HEADLESS;
   extrn mmap;
   extrn munmap;
 
 end if; IMPORT
-ELF.end;
-
 end if; loaded
 
 

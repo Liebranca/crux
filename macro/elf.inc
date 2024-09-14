@@ -21,14 +21,14 @@ include "uid.inc";
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.1a;
+define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
 ; reads argline for macros
 
-macro @elf.rdline dst,line,prefix= {
+macro @elf.rdline dst,line {
 
 
   ; fstate
@@ -38,7 +38,6 @@ macro @elf.rdline dst,line,prefix= {
 
   ; public+name
   match any symbol =: =public name , dst line \{
-
     any\#.sym    equ symbol;
     any\#.name   equ name;
     any\#.public equ 1;
@@ -49,7 +48,6 @@ macro @elf.rdline dst,line,prefix= {
 
   ; ^name only
   match =0 any symbol =: name , ok dst line \{
-
     any\#.sym    equ symbol;
     any\#.name   equ name;
     any\#.public equ 0;
@@ -60,20 +58,11 @@ macro @elf.rdline dst,line,prefix= {
 
   ; ^anon
   match =0 any symbol , ok dst line \{
-
+    any\#.name   equ;
     any\#.sym    equ symbol;
     any\#.public equ 0;
+
     ok equ 1;
-
-    match have , prefix \\{
-      uid.new any\#.name,have;
-
-    \\};
-
-    match , prefix \\{
-      uid.new any\#.name,any;
-
-    \\};
 
   \};
 
@@ -102,7 +91,7 @@ macro ELF line {
 
 
   ; parse input
-  @elf.rdline ice,line,ff;
+  @elf.rdline ice,line;
 
 
   ; compile object file?
@@ -145,41 +134,8 @@ macro ELF line {
   \};
 
 
-  ; set namespace
-  match name , ice#.name \{
-    define \@elf.namespace name;
-
-  \}
-
   ; stop format line from being set again!
   define @elf.ffx 'LOCKED';
-
-};
-
-
-; ---   *   ---   *   ---
-; namespace closer
-
-macro ELF.end {
-  restore @elf.namespace;
-
-};
-
-
-; ---   *   ---   *   ---
-; clears previous fragment
-
-macro fragment.end {
-
-  if defined @elf.cblk;
-    match prev , @elf.cblk \{
-      \#prev\#.len = $-\#prev;
-
-    \}
-
-    restore @elf.cblk;
-
-  end if;
 
 };
 
@@ -207,7 +163,7 @@ macro fragment line {
 
 
   ; parse input
-  @elf.rdline ice,line,fragment;
+  @elf.rdline ice,line;
 
 
   ; have ROM?
@@ -249,9 +205,7 @@ macro fragment line {
   \};
 
 
-  ; close previous and make new segment
-  fragment.end;
-
+  ; make new segment
   if @elf.ff = 0;
     section dir.args type;
 
@@ -261,26 +215,14 @@ macro fragment line {
   end if;
 
 
-  ; make label with namespace?
-  match namespace name , @elf.namespace ice#.name \{
-
-    define @elf.cblk namespace\#.\#name;
-
-    ; make global and local symbols
-    @elf.symbol @elf.cblk;
-    name = @elf.cblk;
-
-  \}
-
-  ; ^no namespace, make local only!
-  match , @elf.namespace \{
-    define @elf.cblk ice#.name;
-    @elf.symbol ice#.name;
-
-  \}
-
+  ; label beggining of segment?
   match =1 name , ice#.public ice#.name \{
     public name;
+
+  \}
+
+  match =0 name , ice#.public ice#.name \{
+    @elf.symbol name;
 
   \}
 
@@ -314,17 +256,17 @@ macro @elf.rmlis line {
 };
 
 macro @elf.public line {
-  match key name namespace , line @elf.namespace \{
-    @elf.rmlis  key namespace\#.\#name;
-    @elf.symbol namespace\#.\#name;
+  match key name , line \{
+    @elf.rmlis  key name;
+    @elf.symbol name;
 
   \};
 
 };
 
 macro @elf.extrn line {
-  match key name namespace , line @elf.namespace \{
-    @elf.rmlis key namespace\#.\#name;
+  match key name , line \{
+    @elf.rmlis key name;
 
   \};
 

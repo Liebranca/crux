@@ -26,31 +26,39 @@ include "../macro/elf.inc";
 ; ---   *   ---   *   ---
 ; info
 
-ELF %:cstr;
+ELF %;
 
-define VERSION v0.00.1a;
+define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
 ; ROM
 
-fragment %:rom;
+fragment %;
 
-  .MASK_Z0 dq $7F7F7F7F7F7F7F7F
-  .MASK_Z1 dq $0101010101010101
-  .MASK_Z2 dq $8080808080808080
+
+; ---   *   ---   *   ---
+; constants for finding null bytes
+
+  cstr.MASK_Z0 dq $7F7F7F7F7F7F7F7F
+  cstr.MASK_Z1 dq $0101010101010101
+  cstr.MASK_Z2 dq $8080808080808080
 
 
 ; ---   *   ---   *   ---
 ; EXE
-;
+
+fragment *;
+
+
+; ---   *   ---   *   ---
 ; length of cstr if chars
 ; are in 00-7E range, else bogus
 ;
 ; [0] rdi -> string to check
 
-fragment *:public len;
+public cstrlen;
 
 
   ; cleanup
@@ -86,16 +94,16 @@ fragment *:public len;
 ; ---   *   ---   *   ---
 ; gives 0 or 1+idex of first null char
 ;
-; [0] rsi -> bytes to check
+; [0] rdx -> bytes to check
 
 firstnull:
 
   xor rcx,rcx
 
   ; convert 00 to 80 && 01-7E to 00 ;>
-  xor rdx,qword [cstr.rom.MASK_Z0];
-  add rdx,qword [cstr.rom.MASK_Z1];
-  and rdx,qword [cstr.rom.MASK_Z2];
+  xor rdx,qword [cstr.MASK_Z0];
+  add rdx,qword [cstr.MASK_Z1];
+  and rdx,qword [cstr.MASK_Z2];
 
   je  @f;
 
@@ -115,7 +123,7 @@ firstnull:
 ; [0] rdi -> ptr to buff
 ; [1] rsi -> N
 
-public next;
+public cstrnext;
 
 
   ; stop at N strings skipped
@@ -125,7 +133,7 @@ public next;
   jz   @f;
 
   ; ^walk next string
-  call cstr.len;
+  call cstrlen;
 
   dec  rsi;
   lea  rdi,[rdi+rax+1];
@@ -134,23 +142,17 @@ public next;
 
   ; give next string!
   @@:
-
-  mov rax,rdi;
   ret;
 
 
 ; ---   *   ---   *   ---
 ; FOOT
 
-fragment.end;
-
 else if ~defined HEADLESS;
-  extrn cstr.len;
-  extrn cstr.next;
+  extrn cstrlen;
+  extrn cstrnext;
 
 end if; IMPORT
-ELF.end;
-
 end if; loaded
 
 
