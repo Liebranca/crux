@@ -12,8 +12,8 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~used @std.cstr.loaded;
-@std.cstr.loaded = 1;
+if ~defined @std.cstr.loaded;
+define @std.cstr.loaded 1;
 
 
 ; ---   *   ---   *   ---
@@ -21,6 +21,7 @@ if ~used @std.cstr.loaded;
 
 if ~defined IMPORT;
 include "../macro/elf.inc";
+include "mem.asm";
 
 
 ; ---   *   ---   *   ---
@@ -28,7 +29,7 @@ include "../macro/elf.inc";
 
 ELF %;
 
-define VERSION v0.00.2a;
+define VERSION v0.00.3a;
 define AUTHOR  'IBN-3DILA';
 
 
@@ -53,50 +54,13 @@ fragment *;
 
 
 ; ---   *   ---   *   ---
-; length of cstr if chars
-; are in 00-7E range, else bogus
-;
-; [0] rdi -> string to check
-
-public cstrlen;
-
-
-  ; cleanup
-  xor rax,rax;
-
-
-  ; get position of first null byte
-  @@:
-
-  mov  rdx,qword [rdi];
-  call firstnull;
-
-  ; ^end reached?
-  test  rcx,rcx;
-  jnz   @f;
-
-  ; ^else increase
-  add   rax,8
-  add   rdi,8
-  jmp   @b;
-
-
-  ; sum and give final length
-  @@:
-
-  dec   rcx;
-  sub   rdi,rax;
-  add   rax,rcx;
-
-  ret;
-
-
-; ---   *   ---   *   ---
 ; gives 0 or 1+idex of first null char
 ;
 ; [0] rdx -> bytes to check
 
 firstnull:
+
+macro firstnull.inline {
 
   xor rcx,rcx
 
@@ -114,6 +78,51 @@ firstnull:
 
 
   @@:
+
+};
+
+  firstnull.inline;
+  ret;
+
+
+; ---   *   ---   *   ---
+; length of cstr if chars
+; are in 00-7E range, else bogus
+;
+; [0] rdi -> string to check
+;
+; [<] rax -> length
+
+public cstrlen;
+
+
+  ; cleanup
+  xor rax,rax;
+
+
+  ; get position of first null byte
+  .top:
+
+  mov rdx,qword [rdi];
+  firstnull.inline;
+
+  ; ^end reached?
+  test rcx,rcx;
+  jnz  @f;
+
+  ; ^else increase
+  add rax,8
+  add rdi,8
+  jmp .top;
+
+
+  ; sum and give final length
+  @@:
+
+  dec rcx;
+  sub rdi,rax;
+  add rax,rcx;
+
   ret;
 
 
@@ -122,6 +131,8 @@ firstnull:
 ;
 ; [0] rdi -> ptr to buff
 ; [1] rsi -> N
+;
+; [<] rdi -> ptr+N*len
 
 public cstrnext;
 
@@ -146,11 +157,82 @@ public cstrnext;
 
 
 ; ---   *   ---   *   ---
+; put B in A
+;
+; [0] rdi -> dst
+; [1] rsi -> src
+;
+; [<] rax -> length of src
+
+cstrcpy:
+
+
+  ; get bytes to copy
+  push rdi;
+  mov  rdi,rsi;
+  call cstrlen;
+
+  ; ^copy them!
+  pop  rdi;
+  push rax;
+  mov  rdx,rax;
+  call memcpy;
+
+  ; give new length
+  pop rax;
+  ret;
+
+
+; ---   *   ---   *   ---
+; give A eq B
+;
+; [0] rdi -> self
+; [1] rsi -> other
+;
+; [<] rax -> true if equal
+
+cstrcmp:
+
+  ; setup stack
+  push rbp;
+  mov  rbp,rsp;
+  sub  rsp,$08;
+
+  ; get length of A
+  call cstrlen;
+  mov  qword [rbp-$08],rax;
+
+  ; get length of B;
+  push rdi;
+  mov  rdi,rsi;
+  call cstrlen;
+
+  ; stop if unequal lengths!
+  pop  rdi;
+  mov  rdx,rax;
+  xor  rax,qword [rbp-$08];
+  test rax,rax;
+  jnz  @f;
+
+  ; equal lengths, so compare!
+  call memcmp;
+
+
+  ; cleanup and give
+  @@:
+
+  leave;
+  ret;
+
+
+; ---   *   ---   *   ---
 ; FOOT
 
 else if ~defined HEADLESS;
   extrn cstrlen;
   extrn cstrnext;
+  extrn cstrcpy;
+  extrn cstrcmp;
 
 end if; IMPORT
 end if; loaded

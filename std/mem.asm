@@ -12,8 +12,8 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~used @std.mem.loaded;
-@std.mem.loaded = 1;
+if ~defined @std.mem.loaded;
+define @std.mem.loaded 1;
 
 
 ; ---   *   ---   *   ---

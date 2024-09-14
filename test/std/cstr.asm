@@ -10,6 +10,28 @@ include '../../os/exit.asm';
 
 
 ; ---   *   ---   *   ---
+; ROM
+
+fragment %;
+
+  m00: db 'HLOWRLD!',$00;
+  m00.len = $-m00;
+
+  m01: db 'HLOWRLD!',$00;
+  m01.len = $-m01;
+
+
+; ---   *   ---   *   ---
+; GBL
+
+fragment $;
+
+  buf00: db $100 dup $00;
+  buf00.len = $-buf00;
+  buf00.end = buf00+buf00.len;
+
+
+; ---   *   ---   *   ---
 ; the bit
 
 fragment *;
@@ -21,30 +43,35 @@ public _start;
   mov  rsi,$02;
   call cstrnext;
 
-
-  ; get length of this string
-  call cstrlen;
-
-  ; ^reserve length bytes in stack
-  add  rax,$02;
-  push rbp;
-  mov  rbp,rsp;
-  sub  rsp,rax;
-
-  ; ^copy to stack
+  ; ^copy to static
   mov  rsi,rdi;
-  mov  rdi,rsp;
-  push rax;
-  dec  rax;
-  mov  rdx,rax;
-  call memcpy;
+  lea  rdi,[buf00];
+  call cstrcpy;
 
 
   ; put newline and print
-  mov byte [rbp-$01],$0A;
+  lea rdi,[buf00+rax+$01];
+  mov byte [rdi],$0A;
+  add rax,$02;
 
-  pop rdx;
-  mov rsi,rsp;
+  lea rsi,[buf00];
+  mov rdx,rax;
+  mov rdi,$01;
+  mov rax,$01;
+
+  syscall;
+
+
+  ; compare strings!
+  lea  rdi,[m00];
+  lea  rsi,[m01];
+  call cstrcmp;
+
+  ; print result
+  or  ax,$0A30;
+  mov word [buf00.end-$02],ax;
+  lea rsi,[buf00.end-$02];
+  mov rdx,$02;
   mov rdi,$01;
   mov rax,$01;
 
@@ -52,8 +79,6 @@ public _start;
 
 
   ; exit
-  leave;
-
   mov  rdi,OK;
   call exit;
 

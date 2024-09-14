@@ -12,8 +12,8 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~used @elf.loaded;
-@elf.loaded = 1;
+if ~defined @elf.loaded;
+define @elf.loaded 1;
 
 include "uid.inc";
 

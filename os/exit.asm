@@ -12,8 +12,8 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~used @os.exit.loaded;
-@os.exit.loaded = 1;
+if ~defined @os.exit.loaded;
+define @os.exit.loaded 1;
 
 ; ---   *   ---   *   ---
 ; s-consts

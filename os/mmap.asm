@@ -12,8 +12,8 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~used @os.mmap.loaded;
-@os.mmap.loaded = 1;
+if ~defined @os.mmap.loaded;
+define @os.mmap.loaded 1;
 
 
 ; ---   *   ---   *   ---
