@@ -13,22 +13,15 @@ include '../../os/exit.asm';
 ; ROM
 
 fragment %;
-
-  m00: db 'HLOWRLD!',$00;
-  m00.len = $-m00;
-
-  m01: db 'HLOWRLD!',$00;
-  m01.len = $-m01;
+  cstr.new m00,'HLOWRLD!';
+  cstr.new m01,'HLOWRLD!';
 
 
 ; ---   *   ---   *   ---
 ; GBL
 
 fragment $;
-
-  buf00: db $100 dup $00;
-  buf00.len = $-buf00;
-  buf00.end = buf00+buf00.len;
+  buf.new b00,$100;
 
 
 ; ---   *   ---   *   ---
@@ -45,16 +38,16 @@ public _start;
 
   ; ^copy to static
   mov  rsi,rdi;
-  lea  rdi,[buf00];
+  lea  rdi,[b00];
   call cstrcpy;
 
 
   ; put newline and print
-  lea rdi,[buf00+rax+$01];
+  lea rdi,[b00+rax+$01];
   mov byte [rdi],$0A;
   add rax,$02;
 
-  lea rsi,[buf00];
+  lea rsi,[b00];
   mov rdx,rax;
   mov rdi,$01;
   mov rax,$01;
@@ -69,8 +62,8 @@ public _start;
 
   ; print result
   or  ax,$0A30;
-  mov word [buf00.end-$02],ax;
-  lea rsi,[buf00.end-$02];
+  mov word [b00.end-$02],ax;
+  lea rsi,[b00.end-$02];
   mov rdx,$02;
   mov rdi,$01;
   mov rax,$01;

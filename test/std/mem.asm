@@ -12,19 +12,14 @@ include '../../os/exit.asm';
 ; ROM
 
 fragment %;
-
-  m00: db '$$$$$$$$','$$$$$$$$','$';
-  m00.len = $-m00;
+  cstr.new m00,'$$$$$$$$','$$$$$$$$','$';
 
 
 ; ---   *   ---   *   ---
 ; GBL
 
 fragment $;
-
-  b00: db $100 dup $00;
-  b00.len = $-b00;
-  b00.end = b00+b00.len;
+  buf.new b00,$100;
 
 
 ; ---   *   ---   *   ---

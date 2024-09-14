@@ -277,6 +277,29 @@ extrn  fix @elf.extrn  extrn;
 
 
 ; ---   *   ---   *   ---
+; make new string or empty buffer
+
+macro cstr.new name,data& {
+  match any , name \{
+    any\#: db data,$00;
+    any\#.len = $-any;
+
+  \};
+
+};
+
+macro buf.new name,size {
+  match any , name \{
+    any\#: db size dup $00;
+    any\#.len = $-any;
+    any\#.end = any+any\#.len;
+
+  \};
+
+};
+
+
+; ---   *   ---   *   ---
 ; FOOT
 
 end if; loaded

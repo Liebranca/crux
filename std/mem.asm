@@ -221,6 +221,8 @@ public memcpy;
 ; [0] rdi -> dst
 ; [1] rsi -> src
 ; [2] rdx -> len
+;
+; [<] rax -> true if equal
 
 public memcmp;
 

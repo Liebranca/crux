@@ -63,6 +63,8 @@ fragment *;
 ; get block of memory
 ;
 ; [0] rdi -> size in bytes
+;
+; [<] rax -> ptr to block
 
 public mmap;
 
