@@ -2,9 +2,8 @@
 !/**/
 !*.*
 !bin/
-
-test/*
 !test/*.asm
+!test/*/*.asm
 
 *.bin
 *.o
