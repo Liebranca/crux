@@ -19,15 +19,15 @@ define @std.cstr.loaded 1;
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT;
-include "../macro/elf.inc";
-include "mem.asm";
+if ~defined IMPORT | IMPORT;
+  include "../macro/elf.inc";
+
+ELF %;
+  include "mem.asm";
 
 
 ; ---   *   ---   *   ---
 ; info
-
-ELF %;
 
 define VERSION v0.00.3a;
 define AUTHOR  'IBN-3DILA';
@@ -60,7 +60,7 @@ fragment *;
 
 firstnull:
 
-macro firstnull.inline {
+macro inline.firstnull {
 
   xor rcx,rcx
 
@@ -81,7 +81,7 @@ macro firstnull.inline {
 
 };
 
-  firstnull.inline;
+  inline.firstnull;
   ret;
 
 
@@ -104,7 +104,7 @@ public cstrlen;
   .top:
 
   mov rdx,qword [rdi];
-  firstnull.inline;
+  inline.firstnull;
 
   ; ^end reached?
   test rcx,rcx;
@@ -228,7 +228,7 @@ cstrcmp:
 ; ---   *   ---   *   ---
 ; FOOT
 
-else if ~defined HEADLESS;
+else if ~defined HEADLESS | ~HEADLESS;
   extrn cstrlen;
   extrn cstrnext;
   extrn cstrcpy;

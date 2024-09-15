@@ -39,15 +39,15 @@ linux.munmap.id = $0B;
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT;
-include "../macro/elf.inc";
-include "../std/uint.asm";
+if ~defined IMPORT | IMPORT;
+  include "../macro/elf.inc";
+
+ELF %;
+  include "../std/uint.asm";
 
 
 ; ---   *   ---   *   ---
 ; info
-
-ELF %;
 
 define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
@@ -119,7 +119,7 @@ public munmap;
 ; ---   *   ---   *   ---
 ; FOOT
 
-else if ~defined HEADLESS;
+else if ~defined HEADLESS | ~HEADLESS;
   extrn mmap;
   extrn munmap;
 

@@ -56,14 +56,14 @@ macro @uint.genp2_bat [line] {
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT;
-include "../macro/elf.inc";
+if ~defined IMPORT | IMPORT;
+  include "../macro/elf.inc";
+
+ELF %;
 
 
 ; ---   *   ---   *   ---
 ; info
-
-ELF %;
 
 define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
@@ -105,7 +105,7 @@ public urdivp2;
 ; ---   *   ---   *   ---
 ; FOOT
 
-else if ~defined HEADLESS;
+else if ~defined HEADLESS | ~HEADLESS;
   extrn urdivp2;
 
 end if; IMPORT

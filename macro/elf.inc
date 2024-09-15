@@ -21,7 +21,7 @@ include "uid.inc";
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.2a;
+define VERSION v0.00.3a;
 define AUTHOR  'IBN-3DILA';
 
 
@@ -83,59 +83,61 @@ macro @elf.rdline dst,line {
 macro ELF line {
 
 
-  ; fstate
-  local last;
-  local ice;
-  local ok;
-  ok equ 0;
+  ; run only once
+  if ~defined @elf.ffx;
 
 
-  ; parse input
-  @elf.rdline ice,line;
+    ; fstate
+    local last;
+    local ice;
+    local ok;
+    ok equ 0;
 
 
-  ; compile object file?
-  match =% , ice#.sym \{
+    ; parse input
+    @elf.rdline ice,line;
 
-    ; run only once
-    if ~defined @elf.ffx;
+
+    ; compile object file?
+    match =% , ice#.sym \{
+
       format ELF64;
 
-      @elf.ff = 0;
+      IMPORT equ 0;
+      ok     equ 1;
 
-    end if;
+    \};
 
-    ok equ 1;
+    ; compile static?
+    match =* , ice#.sym \{
 
-  \};
-
-  ; compile static?
-  match =* , ice#.sym \{
-
-    ; run only once
-    if ~defined @elf.ffx;
       format ELF64 executable 3;
       entry  _start;
 
-      @elf.ff = 1;
+      IMPORT equ 1;
+      ok     equ 1;
 
-    end if;
-
-    ok equ 1;
-
-  \};
+    \};
 
 
-  ; fail!
-  match =0 , ok \{
-    display 'invalid ELF mode',$0A;
-    err;
+    ; fail!
+    match =0 , ok \{
+      display 'invalid ELF mode',$0A;
+      err;
 
-  \};
+    \};
 
 
-  ; stop format line from being set again!
-  define @elf.ffx 'LOCKED';
+    ; stop format line from being set again!
+    define @elf.ffx 'LOCKED';
+    @elf.ff = IMPORT;
+
+
+  ; this controls whether sources are included!
+  else;
+    IMPORT equ @elf.ff;
+
+  end if; @elf.ffx
 
 };
 
@@ -147,11 +149,11 @@ macro fragment line {
 
 
   ; throw if output mode isn't set
-  match , @elf.ff \{
+  if ~defined @elf.ffx;
     display 'ELF was not invoked',$0A;
     err;
 
-  \};
+  end if;
 
 
   ; fstate
@@ -251,14 +253,29 @@ macro @elf.symbol fullname {
 ; when compiling static files
 
 macro @elf.rmlis line {
-  match =$00 , @elf.ff \{line\};
+  if @elf.ff = $00;
+    line;
+
+  end if;
 
 };
 
 macro @elf.public line {
-  match key name , line \{
+
+  local ok;
+  ok equ 0;
+
+  match key name =: , line \{
     @elf.rmlis  key name;
     @elf.symbol name;
+    ok equ 1;
+
+  \};
+
+  match =0 key name , ok line \{
+    @elf.rmlis  key name;
+    @elf.symbol name;
+    ok equ 1;
 
   \};
 

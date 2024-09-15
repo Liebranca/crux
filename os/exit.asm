@@ -15,6 +15,7 @@
 if ~defined @os.exit.loaded;
 define @os.exit.loaded 1;
 
+
 ; ---   *   ---   *   ---
 ; s-consts
 
@@ -29,14 +30,14 @@ linux.exit.id = $3C;
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT;
-include "../macro/elf.inc";
+if ~defined IMPORT | IMPORT;
+  include "../macro/elf.inc";
+
+ELF %;
 
 
 ; ---   *   ---   *   ---
 ; info
-
-ELF %;
 
 define VERSION v0.00.2a;
 define AUTHOR  'IBN-3DILA';
@@ -53,7 +54,7 @@ fragment *;
 ;
 ; [0] rdi -> exit code
 
-public exit;
+public exit:
 
   ; TODO: 'onexit' callback list
 
@@ -64,7 +65,7 @@ public exit;
 ; ---   *   ---   *   ---
 ; FOOT
 
-else if ~defined HEADLESS;
+else if ~defined HEADLESS | ~HEADLESS;
   extrn exit;
 
 end if; IMPORT

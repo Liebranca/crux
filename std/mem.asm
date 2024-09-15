@@ -19,14 +19,14 @@ define @std.mem.loaded 1;
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT;
-include "../macro/elf.inc";
+if ~defined IMPORT | IMPORT;
+  include "../macro/elf.inc";
+
+ELF %;
 
 
 ; ---   *   ---   *   ---
 ; info
-
-ELF %;
 
 define VERSION v0.00.3a;
 define AUTHOR  'IBN-3DILA';
@@ -425,7 +425,7 @@ public memcmp;
 ; ---   *   ---   *   ---
 ; FOOT
 
-else if ~defined HEADLESS;
+else if ~defined HEADLESS | ~HEADLESS;
   extrn memcpy;
   extrn memcmp;
 
