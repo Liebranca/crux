@@ -87,7 +87,7 @@ fragment *;
 ; [1] rsi -> src
 ; [2] rdx -> len
 
-public memcpy;
+public memcpy:
 
 
   ; 16 or more bytes left?
@@ -133,6 +133,7 @@ public memcpy;
   dec rdx;
   mov al,byte [rdx+memcpy.jmptab];
   add rax,.byte;
+  inc rdx;
 
   jmp rax;
 
@@ -143,6 +144,10 @@ public memcpy;
   mov r8b,byte [rsi];
   mov byte [rdi],r8b;
 
+  inc rdi;
+  inc rsi;
+  dec rdx;
+
   ret;
 
   ; two bytes!
@@ -150,6 +155,10 @@ public memcpy;
 
   mov r8w,word [rsi];
   mov word [rdi],r8w;
+
+  add rdi,$02;
+  add rsi,$02;
+  sub rdx,$02;
 
   ret;
 
@@ -162,6 +171,10 @@ public memcpy;
   mov word [rdi+$00],r8w;
   mov byte [rdi+$02],r9b;
 
+  add rdi,$03;
+  add rsi,$03;
+  sub rdx,$03;
+
   ret;
 
   ; four bytes!
@@ -169,6 +182,10 @@ public memcpy;
 
   mov r8d,dword [rsi];
   mov dword [rdi],r8d;
+
+  add rdi,$04;
+  add rsi,$04;
+  sub rdx,$04;
 
   ret;
 
@@ -181,6 +198,10 @@ public memcpy;
   mov dword [rdi+$00],r8d;
   mov byte [rdi+$04],r9b;
 
+  add rdi,$05;
+  add rsi,$05;
+  sub rdx,$05;
+
   ret;
 
   ; six bytes!
@@ -190,6 +211,10 @@ public memcpy;
 
   mov dword [rdi+$00],r8d;
   mov word [rdi+$04],r9w;
+
+  add rdi,$06;
+  add rsi,$06;
+  sub rdx,$06;
 
   ret;
 
@@ -204,6 +229,10 @@ public memcpy;
   mov word [rdi+$04],r9w;
   mov byte [rdi+$06],r10b;
 
+  add rdi,$07;
+  add rsi,$07;
+  sub rdx,$07;
+
   ret;
 
   ; eight bytes!
@@ -211,6 +240,10 @@ public memcpy;
 
   mov r8,qword [rsi];
   mov qword [rdi],r8;
+
+  add rdi,$08;
+  add rsi,$08;
+  sub rdx,$08;
 
   ret;
 
@@ -224,7 +257,7 @@ public memcpy;
 ;
 ; [<] rax -> true if equal
 
-public memcmp;
+public memcmp:
 
 
   ; setup stack
@@ -258,7 +291,7 @@ public memcmp;
   jnz  .stop;
 
 
-  ; go next or stop?
+  ; go next
   add  rdi,$10;
   add  rsi,$10;
   sub  rdx,$10;

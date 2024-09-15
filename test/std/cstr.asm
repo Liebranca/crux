@@ -28,7 +28,7 @@ fragment $;
 ; the bit
 
 fragment *;
-public _start;
+public _start:
 
 
   ; get second string in stack
