@@ -1,11 +1,34 @@
 ; ---   *   ---   *   ---
-; deps
+; TEST STD MEM
+;
+; LIBRE SOFTWARE
+; Licensed under GNU GPL3
+; be a bro and inherit
+;
+; CONTRIBUTORS
+; lyeb,
+
+; ---   *   ---   *   ---
+; HEAD
 
 include '../../macro/elf.inc';
-ELF *;
 
-include '../../std/mem.asm';
-include '../../os/exit.asm';
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     test.std.mem;
+
+  VERSION   v0.00.2;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
+
+ELF *;
+  include '../../std/mem.asm';
+  include '../../os/exit.asm';
 
 
 ; ---   *   ---   *   ---
@@ -26,7 +49,7 @@ fragment $;
 ; the bit
 
 fragment *;
-public _start;
+entrypoint:
 
 
   ; copy string from ROM to static
@@ -77,6 +100,12 @@ public _start;
   ; exit
   mov  rdi,OK;
   call exit;
+
+
+; ---   *   ---   *   ---
+; FOOT
+
+EOF;
 
 
 ; ---   *   ---   *   ---

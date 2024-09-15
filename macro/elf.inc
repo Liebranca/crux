@@ -12,17 +12,22 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~defined @elf.loaded;
-define @elf.loaded 1;
-
-include "uid.inc";
+include "INFO.inc";
 
 
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.3a;
-define AUTHOR  'IBN-3DILA';
+  TITLE     elf;
+
+  VERSION   v0.00.3a;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
+
+  include "uid.inc";
 
 
 ; ---   *   ---   *   ---
@@ -80,7 +85,7 @@ macro @elf.rdline dst,line {
 ; ---   *   ---   *   ---
 ; set file mode. modifies fragment lines
 
-macro ELF line {
+macro @ELF line {
 
 
   ; run only once
@@ -312,6 +317,87 @@ macro buf.new name,size {
     any\#.end = any+any\#.len;
 
   \};
+
+};
+
+
+; ---   *   ---   *   ---
+; typically, one only declares an
+; entry point for the final static
+;
+; however, we can use statics within
+; objects and viceversa, and an entry
+; point should be converted into a regular
+; symbol in that case. essentially, turning
+; '_start' into a regular function
+;
+; this alias does just that!
+
+macro entrypoint name= {
+
+
+  ; fstate
+  local have;
+  local ok;
+
+  have equ name;
+  ok   equ 0;
+
+
+  ; remove colon!
+  match =: , have \{
+    have equ;
+
+  \};
+
+
+  ; default to module name
+  match , have \{
+    match any , this.module \\{
+      have equ any;
+
+    \\};
+
+  \};
+
+  ; remove colon (again!)
+  match any =: , have \{
+    have equ any;
+
+  \};
+
+
+  ; declare common symbol if compiling object
+  if @elf.ff = 0;
+    public have;
+
+  ; ^declare _start on static
+  else if @elf.ff = 1;
+    public _start:
+    have = _start;
+
+  end if;
+
+};
+
+
+; ---   *   ---   *   ---
+; aliases for common checks
+
+macro ELF line {
+  if ~defined IMPORT | IMPORT;
+  @ELF line;
+
+};
+
+macro FOOT {
+  else if ~defined HEADLESS | ~HEADLESS;
+
+};
+
+macro EOF {
+  end if; IMPORT
+  EOF;
 
 };
 

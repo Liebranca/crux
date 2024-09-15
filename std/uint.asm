@@ -12,8 +12,16 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~used @std.uint.loaded;
-@std.uint.loaded = 1;
+include "../macro/elf.inc";
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     std.uint;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -56,17 +64,7 @@ macro @uint.genp2_bat [line] {
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT | IMPORT;
-  include "../macro/elf.inc";
-
 ELF %;
-
-
-; ---   *   ---   *   ---
-; info
-
-define VERSION v0.00.2a;
-define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -105,11 +103,10 @@ public urdivp2;
 ; ---   *   ---   *   ---
 ; FOOT
 
-else if ~defined HEADLESS | ~HEADLESS;
+FOOT;
   extrn urdivp2;
 
-end if; IMPORT
-end if; loaded
+EOF;
 
 
 ; ---   *   ---   *   ---

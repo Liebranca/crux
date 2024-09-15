@@ -12,8 +12,16 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~defined @os.exit.loaded;
-define @os.exit.loaded 1;
+include "../macro/elf.inc";
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     os.exit;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -30,17 +38,7 @@ linux.exit.id = $3C;
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT | IMPORT;
-  include "../macro/elf.inc";
-
 ELF %;
-
-
-; ---   *   ---   *   ---
-; info
-
-define VERSION v0.00.2a;
-define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -63,13 +61,12 @@ public exit:
 
 
 ; ---   *   ---   *   ---
-; FOOT
+; adds to your namespace
 
-else if ~defined HEADLESS | ~HEADLESS;
+FOOT;
   extrn exit;
 
-end if; IMPORT
-end if; loaded
+EOF;
 
 
 ; ---   *   ---   *   ---

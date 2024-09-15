@@ -12,8 +12,16 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~defined @os.write.loaded;
-define @os.write.loaded 1;
+include "../macro/elf.inc";
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     os.write;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -26,18 +34,8 @@ linux.write:
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT | IMPORT;
-  include "../macro/elf.inc";
-
 ELF %;
   include "../std/mem.asm";
-
-
-; ---   *   ---   *   ---
-; info
-
-define VERSION v0.00.1a;
-define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -207,15 +205,14 @@ public fout:
 
 
 ; ---   *   ---   *   ---
-; FOOT
+; adds to your namespace
 
-else if ~defined HEADLESS | ~HEADLESS;
+FOOT;
   extrn write;
   extrn flush;
   extrn fout;
 
-end if; IMPORT
-end if; loaded
+EOF;
 
 
 ; ---   *   ---   *   ---

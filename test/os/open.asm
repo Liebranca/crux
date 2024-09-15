@@ -1,7 +1,30 @@
 ; ---   *   ---   *   ---
-; deps
+; TEST OS OPEN
+;
+; LIBRE SOFTWARE
+; Licensed under GNU GPL3
+; be a bro and inherit
+;
+; CONTRIBUTORS
+; lyeb,
+
+; ---   *   ---   *   ---
+; HEAD
 
 include '../../macro/elf.inc';
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     test.os.open;
+
+  VERSION   v0.00.2;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
 
 ELF *;
   include '../../os/open.asm';
@@ -18,7 +41,7 @@ fragment %;
 ; the bit
 
 fragment *;
-public _start;
+entrypoint:
 
 
   ; make new file
@@ -39,6 +62,12 @@ public _start;
   ; exit
   mov  rdi,OK;
   call exit;
+
+
+; ---   *   ---   *   ---
+; FOOT
+
+EOF;
 
 
 ; ---   *   ---   *   ---

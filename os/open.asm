@@ -12,8 +12,16 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~defined @os.open.loaded;
-define @os.open.loaded 1;
+include "../macro/elf.inc";
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     os.open;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -142,18 +150,8 @@ macro inline.unlink {
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT | IMPORT;
-  include "../macro/elf.inc";
-
 ELF %;
   include "exit.asm";
-
-
-; ---   *   ---   *   ---
-; info
-
-define VERSION v0.00.1a;
-define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -217,15 +215,14 @@ public unlink:
 
 
 ; ---   *   ---   *   ---
-; FOOT
+; adds to your namespace
 
-else if ~defined HEADLESS | ~HEADLESS;
+FOOT;
   extrn open;
   extrn close;
   extrn unlink;
 
-end if; IMPORT
-end if; loaded
+EOF;
 
 
 ; ---   *   ---   *   ---

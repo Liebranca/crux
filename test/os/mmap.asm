@@ -1,17 +1,41 @@
 ; ---   *   ---   *   ---
-; deps
-
-include '../../macro/elf.inc';
-ELF *;
-
-include '../../os/mmap.asm';
-include '../../os/exit.asm';
+; TEST OS MMAP
+;
+; LIBRE SOFTWARE
+; Licensed under GNU GPL3
+; be a bro and inherit
+;
+; CONTRIBUTORS
+; lyeb,
 
 ; ---   *   ---   *   ---
-; the bit
+; HEAD
+
+include '../../macro/elf.inc';
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     test.os.mmap;
+
+  VERSION   v0.00.2;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
+
+ELF *;
+  include '../../os/mmap.asm';
+  include '../../os/exit.asm';
+
+
+; ---   *   ---   *   ---
+; EXE
 
 fragment *;
-public _start;
+entrypoint:
 
 
   ; get mem
@@ -27,6 +51,12 @@ public _start;
   ; exit
   mov  rdi,OK;
   call exit;
+
+
+; ---   *   ---   *   ---
+; FOOT
+
+EOF;
 
 
 ; ---   *   ---   *   ---

@@ -12,8 +12,16 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~defined @os.mmap.loaded;
-define @os.mmap.loaded 1;
+include "../macro/elf.inc";
+
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     os.mmap;
+
+  VERSION   v0.00.3a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -39,18 +47,8 @@ linux.munmap.id = $0B;
 ; ---   *   ---   *   ---
 ; deps
 
-if ~defined IMPORT | IMPORT;
-  include "../macro/elf.inc";
-
 ELF %;
   include "../std/uint.asm";
-
-
-; ---   *   ---   *   ---
-; info
-
-define VERSION v0.00.2a;
-define AUTHOR  'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -117,14 +115,13 @@ public munmap;
 
 
 ; ---   *   ---   *   ---
-; FOOT
+; adds to your namespace
 
-else if ~defined HEADLESS | ~HEADLESS;
+FOOT;
   extrn mmap;
   extrn munmap;
 
-end if; IMPORT
-end if; loaded
+EOF;
 
 
 ; ---   *   ---   *   ---

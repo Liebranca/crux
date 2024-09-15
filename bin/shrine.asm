@@ -10,16 +10,29 @@
 ; lyeb,
 
 ; ---   *   ---   *   ---
-; deps
+; HEAD
 
 include '../macro/elf.inc';
-ELF *;
 
-define BUFIO_SIZE temple.len;
-include '../os/open.asm';
-include '../os/write.asm';
-include '../os/exit.asm';
-include '../std/cstr.asm';
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     shrine;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
+
+ELF *;
+  define BUFIO_SIZE temple.len;
+  include '../os/open.asm';
+  include '../os/write.asm';
+  include '../os/exit.asm';
+  include '../std/cstr.asm';
 
 
 ; ---   *   ---   *   ---
@@ -37,13 +50,21 @@ db '; Licensed under GNU GPL3',$0A;
 db '; be a bro and inherit',$0A;
 db ';',$0A;
 db '; CONTRIBUTORS',$0A;
-db '; lyeb,',$0A;
+db '; ME,',$0A;
 db $0A;
 db '; ---   *   ---   *   ---',$0A;
 db '; HEAD',$0A;
 db $0A;
-db 'if ~defined @[name].loaded;',$0A;
-db 'define @[name].loaded 1;',$0A;
+db "include '../macro/elf.inc'",$0A;
+db $0A;
+db $0A;
+db '; ---   *   ---   *   ---',$0A;
+db '; info',$0A;
+db $0A;
+db '  TITLE     module;',$0A;
+db $0A;
+db '  VERSION   v0.00.1a;',$0A;
+db "  AUTHOR    'ME';",$0A;
 db $0A;
 db $0A;
 db '; ---   *   ---   *   ---',$0A;
@@ -53,30 +74,33 @@ db $0A;
 db '; ---   *   ---   *   ---',$0A;
 db '; deps',$0A;
 db $0A;
-db 'if ~defined IMPORT | IMPORT;',$0A;
-db "  include '../macro/elf.inc'",$0A;
-db $0A;
 db "ELF %;",$0A;
 db $0A;
 db $0A;
 db '; ---   *   ---   *   ---',$0A;
-db '; FOOT',$0A;
+db '; EXE',$0A;
 db $0A;
-db 'else if ~defined HEADLESS | ~HEADLESS;',$0A;
+db "fragment *;",$0A;
 db $0A;
-db 'end if; IMPORT',$0A;
-db 'end if; loaded',$0A;
+db $0A;
+db '; ---   *   ---   *   ---',$0A;
+db '; adds to your namespace',$0A;
+db $0A;
+db 'FOOT;',$0A;
+db $0A;
+db 'EOF;',$0A;
 db $0A;
 db $0A;
 db '; ---   *   ---   *   ---',$0A;
 
 temple.len = $-temple;
 
+
 ; ---   *   ---   *   ---
 ; EXE
 
 fragment *;
-public _start:
+entrypoint:
 
 
   ; argc > 1?
@@ -134,6 +158,12 @@ public _start:
 
   mov  rdi,OK;
   call exit;
+
+
+; ---   *   ---   *   ---
+; FOOT
+
+EOF;
 
 
 ; ---   *   ---   *   ---

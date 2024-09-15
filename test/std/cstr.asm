@@ -1,12 +1,35 @@
 ; ---   *   ---   *   ---
-; deps
+; TEST STD CSTR
+;
+; LIBRE SOFTWARE
+; Licensed under GNU GPL3
+; be a bro and inherit
+;
+; CONTRIBUTORS
+; lyeb,
+
+; ---   *   ---   *   ---
+; HEAD
 
 include '../../macro/elf.inc';
-ELF *;
 
-include '../../std/cstr.asm';
-include '../../std/mem.asm';
-include '../../os/exit.asm';
+
+; ---   *   ---   *   ---
+; info
+
+  TITLE     test.std.cstr;
+
+  VERSION   v0.00.2;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
+
+ELF *;
+  include '../../std/cstr.asm';
+  include '../../std/mem.asm';
+  include '../../os/exit.asm';
 
 
 ; ---   *   ---   *   ---
@@ -28,7 +51,7 @@ fragment $;
 ; the bit
 
 fragment *;
-public _start:
+entrypoint:
 
 
   ; get second string in stack
@@ -74,6 +97,12 @@ public _start:
   ; exit
   mov  rdi,OK;
   call exit;
+
+
+; ---   *   ---   *   ---
+; FOOT
+
+EOF;
 
 
 ; ---   *   ---   *   ---

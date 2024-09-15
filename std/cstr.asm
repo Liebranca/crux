@@ -12,25 +12,23 @@
 ; ---   *   ---   *   ---
 ; HEAD
 
-if ~defined @std.cstr.loaded;
-define @std.cstr.loaded 1;
-
-
-; ---   *   ---   *   ---
-; deps
-
-if ~defined IMPORT | IMPORT;
-  include "../macro/elf.inc";
-
-ELF %;
-  include "mem.asm";
+include "../macro/elf.inc";
 
 
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.3a;
-define AUTHOR  'IBN-3DILA';
+  TITLE     std.cstr;
+
+  VERSION   v0.00.3a;
+  AUTHOR    'IBN-3DILA';
+
+
+; ---   *   ---   *   ---
+; deps
+
+ELF %;
+  include "mem.asm";
 
 
 ; ---   *   ---   *   ---
@@ -226,16 +224,15 @@ cstrcmp:
 
 
 ; ---   *   ---   *   ---
-; FOOT
+; adds to your namespace
 
-else if ~defined HEADLESS | ~HEADLESS;
+FOOT;
   extrn cstrlen;
   extrn cstrnext;
   extrn cstrcpy;
   extrn cstrcmp;
 
-end if; IMPORT
-end if; loaded
+EOF;
 
 
 ; ---   *   ---   *   ---
