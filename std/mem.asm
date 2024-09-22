@@ -20,7 +20,7 @@ include "../macro/elf.inc";
 
   TITLE     std.mem;
 
-  VERSION   v0.00.4a;
+  VERSION   v0.00.5a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -37,7 +37,29 @@ fragment %;
 
 
 ; ---   *   ---   *   ---
-; jump table for mem.copy
+; jump table for memset
+
+memset.jmptab:
+
+  db $00;
+
+  db memset.word-memset.byte;
+  db memset.word_byte-memset.byte;
+
+  db memset.dword-memset.byte;
+  db memset.dword_byte-memset.byte;
+  db memset.dword_word-memset.byte;
+  db memset.dword_word_byte-memset.byte;
+
+  db memset.qword-memset.byte;
+
+memset.null:
+  dq $00;
+  dq $00;
+
+
+; ---   *   ---   *   ---
+; jump table for memcpy
 
 memcpy.jmptab:
 
@@ -55,7 +77,7 @@ memcpy.jmptab:
 
 
 ; ---   *   ---   *   ---
-; jump table for mem.cmp
+; jump table for memcmp
 
 memcmp.jmptab:
 
@@ -76,6 +98,170 @@ memcmp.jmptab:
 ; EXE
 
 fragment *;
+
+
+; ---   *   ---   *   ---
+; flood-fill const B to A
+;
+; [0] rdi -> dst
+; [1] rsi -> src (ptr to const)
+; [2] rdx -> len
+
+public memset:
+
+
+  ; default to zeroing out the buff!
+  lea   rax,[memset.null];
+  test  rsi,rsi;
+  cmovz rsi,rax;
+
+
+  ; 16 or more bytes left?
+  @@:
+
+  cmp rdx,$10;
+  jl  @f;
+
+  movdqu xmm0,xword [rsi];
+  movdqu xword [rdi],xmm0;
+  add    rdi,$10;
+  sub    rdx,$10;
+
+  ; go next or stop?
+  test   rdx,rdx;
+  jnz    @b;
+  ret;
+
+
+  ; more than 8 and less than 16?
+  @@:
+
+  cmp rdx,$08;
+  jle .prim;
+
+  mov r8,qword [rsi];
+  mov qword [rdi],r8;
+  add rdi,$08;
+  sub rdx,$08;
+
+  ; go next or stop?
+  test rdx,rdx;
+  jnz  .prim;
+  ret;
+
+
+  ; 8 or less bytes left?
+  .prim:
+
+  xor rax,rax;
+  dec rdx;
+  mov al,byte [rdx+memset.jmptab];
+  add rax,.byte;
+  inc rdx;
+
+  jmp rax;
+
+
+  ; single byte!
+  .byte:
+
+  mov r8b,byte [rsi];
+  mov byte [rdi],r8b;
+
+  inc rdi;
+  dec rdx;
+
+  ret;
+
+  ; two bytes!
+  .word:
+
+  mov r8w,word [rsi];
+  mov word [rdi],r8w;
+
+  add rdi,$02;
+  sub rdx,$02;
+
+  ret;
+
+  ; three bytes!
+  .word_byte:
+
+  mov r8w,word [rsi+$00];
+  mov r9b,byte [rsi+$02];
+
+  mov word [rdi+$00],r8w;
+  mov byte [rdi+$02],r9b;
+
+  add rdi,$03;
+  sub rdx,$03;
+
+  ret;
+
+  ; four bytes!
+  .dword:
+
+  mov r8d,dword [rsi];
+  mov dword [rdi],r8d;
+
+  add rdi,$04;
+  sub rdx,$04;
+
+  ret;
+
+
+  ; five bytes!
+  .dword_byte:
+  mov r8d,dword [rsi+$00];
+  mov r9b,byte [rsi+$04];
+
+  mov dword [rdi+$00],r8d;
+  mov byte [rdi+$04],r9b;
+
+  add rdi,$05;
+  sub rdx,$05;
+
+  ret;
+
+  ; six bytes!
+  .dword_word:
+  mov r8d,dword [rsi+$00];
+  mov r9w,word [rsi+$04];
+
+  mov dword [rdi+$00],r8d;
+  mov word [rdi+$04],r9w;
+
+  add rdi,$06;
+  sub rdx,$06;
+
+  ret;
+
+  ; seven bytes!
+  .dword_word_byte:
+
+  mov r8d,dword [rsi+$00];
+  mov r9w,word [rsi+$04];
+  mov r10b,byte [rsi+$06];
+
+  mov dword [rdi+$00],r8d;
+  mov word [rdi+$04],r9w;
+  mov byte [rdi+$06],r10b;
+
+  add rdi,$07;
+  sub rdx,$07;
+
+  ret;
+
+  ; eight bytes!
+  .qword:
+
+  mov r8,qword [rsi];
+  mov qword [rdi],r8;
+
+  add rdi,$08;
+  sub rdx,$08;
+
+  ret;
 
 
 ; ---   *   ---   *   ---
@@ -457,6 +643,7 @@ public memcmp:
 ; adds to your namespace
 
 FOOT;
+  extrn memset;
   extrn memcpy;
   extrn memcmp;
 

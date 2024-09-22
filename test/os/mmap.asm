@@ -28,9 +28,9 @@ include '../../macro/elf.inc';
 
 ELF *;
 
-  define ELF.ALIGN   $00;
-  define BUFIO.SZ    $00;
-  define ALLOCT.STEP $10;
+  define ELF.ALIGN $00;
+  define BUFIO.SZ  $00;
+  define CASK.LIST $10:$02,$20:$04;
 
   include '../../os/mmap.asm';
   include '../../os/exit.asm';
@@ -42,6 +42,9 @@ ELF *;
 fragment *;
 entrypoint:
 
+lis alloct E at rax;
+match elem , E {
+
 
   ; setup stack
   push rbp;
@@ -50,8 +53,24 @@ entrypoint:
 
 
   ; nit allocator
-  mov  rdi,$00;
+  mov  rdi,rsp;
   call begalloc;
+
+
+  ; clam first slot
+  mov  di,$10;
+  mov  si,$02;
+  call alloc;
+
+  mov  qword [elem#.buf],$01;
+
+  ; ^claim second slot!
+  mov  di,$20;
+  mov  si,$04;
+  call alloc;
+
+  mov  qword [elem#.buf],$01;
+
 
   ; del allocator
   call endalloc;
@@ -62,6 +81,10 @@ entrypoint:
 
   mov  rdi,OK;
   call exit;
+
+};
+
+restore E;
 
 
 ; ---   *   ---   *   ---

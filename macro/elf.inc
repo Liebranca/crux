@@ -20,7 +20,7 @@ include "INFO.inc";
 
   TITLE     elf;
 
-  VERSION   v0.00.4a;
+  VERSION   v0.00.5a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -446,8 +446,6 @@ macro @elf.struc.inner name,glob,icen,addr {
     vmem.#name#::
     glob#:
 
-    define vmem.has.#name 1;
-
   end if;
 
   ; user definition (via strucdef) pasted here
@@ -456,8 +454,12 @@ macro @elf.struc.inner name,glob,icen,addr {
 
 
   ; get total size after fields!
-  sizeof.#name = $-glob;
+  if ~defined vmem.has.#name;
+    sizeof.#name = $-glob;
+  end if;
   end virtual;
+
+  define vmem.has.#name 1;
 
 };
 
@@ -581,6 +583,54 @@ macro static line {
     end repeat;
 
   \};
+
+};
+
+
+; ---   *   ---   *   ---
+; ^make scoped instance
+;
+; this means generate a discardable
+; unique ID that can then be unrolled!
+
+macro lis line {
+
+
+  ; fstate
+  local name;
+  local type;
+  local addr;
+  local ok;
+
+  ok equ 0;
+
+  ; ^parse args
+  match T N =at X , line \{
+    type equ T;
+    name equ N;
+    addr equ X;
+    ok   equ 1;
+
+  \};
+
+  match =0 T N , ok line \{
+    type equ T;
+    name equ N;
+    addr equ $;
+    ok   equ 1;
+
+  \};
+
+
+  ; make ice
+  match T N X , type name addr \{
+
+    uid.new N,lis;
+    T N at X;
+
+    define name N;
+
+  \}
 
 };
 

@@ -100,6 +100,8 @@ fragment *;
 ;
 ; [0] rdi -> X to align
 ; [1] cl  -> exponent
+;
+; [<] rax -> result
 
 public urdivp2;
   pinb urdivp2;

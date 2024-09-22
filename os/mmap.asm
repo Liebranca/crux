@@ -45,43 +45,81 @@ linux.munmap.id = $0B;
 
 
 ; ---   *   ---   *   ---
+; calculates size of main table
+
+macro @mmap.proc_casks [item] {
+
+  common;
+    local step;
+    local elems;
+    local sz;
+    local mask.sz;
+
+    step    equ 0;
+    elems   equ 0;
+    sz      equ 0;
+    mask.sz equ 0;
+
+  forward match cnt =: ezy , item \{
+    step    equ step  + 1;
+    elems   equ elems + (cnt);
+    sz      equ sz    + (ezy);
+    mask.sz equ mask.sz + (cnt + ((1 shl 6)-1)) shr 6
+
+  \};
+
+  common;
+
+    alloct.step    = step;
+    alloct.cap     = step;
+    alloct.mask_sz = mask.sz;
+    alloct.req     = sizeof.alloct * alloct.step \
+                   + (alloct.mask_sz shl 3);
+
+};
+
+; ---   *   ---   *   ---
 ; allocator base
 
 strucdef alloct {
 
-  ; use default for table size increment?
-  if ~defined ALLOCT.STEP;
-    alloct.step = $40;
 
-  else;
-    alloct.step = ALLOCT.STEP;
+  ; read pre-allocations to build main table!
+  if ~defined ALLOCT.READY;
+    match list , CASK.LIST \{
+      @mmap.proc_casks list;
+
+    \};
 
   end if;
-
-  ; ^cap to 32-bit!
-  assert alloct.step < (1 shl 32);
 
 
   ; fields
   .buf   dq $00;
-  .mask  dq $00;
 
-  .cnt   dd $00;
-  .cap   dd alloct.step;
+  .cnt   dw $00;
+  .cap   dw alloct.step;
 
-  .ezy   dd sizeof.alloct;
-  .flags dd $00;
+  .ezy   dw sizeof.alloct;
+  .flags dw $00;
+
+  .mask:
 
 
-  ; flagdefs
-  alloct.flags.dynamic = $0001;
+  ; consts
+  if ~defined ALLOCT.READY
 
-  ; meta
-  alloct.req    = sizeof.alloct * alloct.step;
-  sizep2.alloct = $05;
+    ; flagdefs
+    alloct.flags.dynamic = $0001;
 
-  ; ^ensure the size is correct!
-  assert sizeof.alloct = $20;
+    ; meta
+    sizep2.alloct = $04;
+
+    ; ^ensure the size is correct!
+    assert sizeof.alloct = $10;
+
+  end if;
+  define ALLOCT.READY 1;
 
 };
 
@@ -214,14 +252,14 @@ public begalloc:
   call mmap;
 
   mov  rdi,rax;
-  or   dword [mmap.alloct.flags],\
+  or   word [mmap.alloct.flags],\
        alloct.flags.dynamic;
 
   ; reset table and give
   @@:
 
   mov qword [mmap.alloct.buf],rdi;
-  mov dword [mmap.alloct.cnt],$00;
+  mov word [mmap.alloct.cnt],$00;
 
   ret;
 
@@ -242,31 +280,91 @@ public endalloc:
   ; need to free heap?
   @@:
 
-  mov  eax,dword [mmap.alloct.flags];
-  test eax,alloct.flags.dynamic;
+  mov  ax,word [mmap.alloct.flags];
+  test ax,alloct.flags.dynamic;
   jz   @f;
 
 
   ; map bytesize to page count
-  mov  edi,dword [mmap.alloct.cap];
+  xor  rdi,rdi;
+  mov  di,word [mmap.alloct.cap];
   shl  rdi,sizep2.alloct;
+  add  rdi,alloct.mask_sz shl 3;
   mov  cl,sizep2.page;
   pinb urdivp2;
 
   ; ^unmap pages!
-  mov  rsi,rdi;
+  mov  rsi,rax;
   mov  rdi,qword [mmap.alloct.buf];
   pinb munmap;
 
 
-  ; clear table and give
+  ; clear table
   @@:
 
   mov qword [mmap.alloct.buf],$00;
-  mov qword [mmap.alloct.mask],$00;
   mov dword [mmap.alloct.flags],$00;
 
   ret;
+
+
+; ---   *   ---   *   ---
+; get unused table entry
+;
+; [0] di -> cap
+; [1] si -> ezy
+;
+; [<] rax -> ptr to alloct entry
+
+public alloc:
+
+lis alloct E at rax;
+match elem , E {
+
+
+  ; preserve/clear
+  push rbx;
+  xor  rdx,rdx;
+
+
+  ; get next elem
+  @@:
+
+  mov rax,qword [mmap.alloct.buf];
+  add rax,rdx;
+
+  ; occupied?
+  mov  rbx,qword [elem#.buf];
+  test rbx,rbx;
+  jz   @f;
+
+
+  ; skip mask array (qword count)
+  push rdi;
+  xor  rdi,rdi;
+  mov  di,word [elem#.cap];
+  mov  cl,sizep2.zword;
+  pinb urdivp2;
+  shl  rax,3;
+  lea  rdx,[rax+sizeof.alloct];
+
+  pop  rdi;
+  jmp  @b;
+
+
+  ; fill out meta
+  @@:
+
+  mov word [elem#.cap],di;
+  mov word [elem#.ezy],si;
+
+  ; restore and give
+  pop rbx;
+  ret;
+
+};
+
+restore E;
 
 
 ; ---   *   ---   *   ---
@@ -277,6 +375,7 @@ FOOT;
   extrn munmap;
   extrn begalloc;
   extrn endalloc;
+  extrn alloc;
 
 EOF;
 
