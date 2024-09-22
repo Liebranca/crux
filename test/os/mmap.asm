@@ -19,7 +19,7 @@ include '../../macro/elf.inc';
 
   TITLE     test.os.mmap;
 
-  VERSION   v0.00.2;
+  VERSION   v0.00.3;
   AUTHOR    'IBN-3DILA';
 
 
@@ -27,6 +27,11 @@ include '../../macro/elf.inc';
 ; deps
 
 ELF *;
+
+  define ELF.ALIGN   $00;
+  define BUFIO.SZ    $00;
+  define ALLOCT.STEP $10;
+
   include '../../os/mmap.asm';
   include '../../os/exit.asm';
 
@@ -38,17 +43,23 @@ fragment *;
 entrypoint:
 
 
-  ; get mem
-  mov  rdi,$1000;
-  call mmap;
-
-  ; ^free mem
-  mov  rdi,rax;
-  mov  rsi,$01;
-  call munmap;
+  ; setup stack
+  push rbp;
+  mov  rbp,rsp;
+  sub  rsp,alloct.req;
 
 
-  ; exit
+  ; nit allocator
+  mov  rdi,$00;
+  call begalloc;
+
+  ; del allocator
+  call endalloc;
+
+
+  ; cleanup and give
+  leave;
+
   mov  rdi,OK;
   call exit;
 

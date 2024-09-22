@@ -28,7 +28,7 @@ include '../macro/elf.inc';
 ; deps
 
 ELF *;
-  define BUFIO_SIZE temple.len;
+  define BUFIO.SZ temple.len;
   include '../os/open.asm';
   include '../os/write.asm';
   include '../os/exit.asm';
@@ -144,13 +144,13 @@ entrypoint:
   call flush;
 
   ; need to close file?
-  xor rax,rax;
-  mov ax,word [rbp-$02];
-  cmp ax,$01;
-  je  @f;
+  xor  rax,rax;
+  mov  ax,word [rbp-$02];
+  cmp  ax,$01;
+  je   @f;
 
-  mov rdi,rax;
-  inline.close;
+  mov  rdi,rax;
+  pinb close;
 
 
   ; cleanup and give

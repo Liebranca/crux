@@ -20,7 +20,7 @@ include "INFO.inc";
 
   TITLE     elf;
 
-  VERSION   v0.00.3a;
+  VERSION   v0.00.4a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -28,6 +28,18 @@ include "INFO.inc";
 ; deps
 
   include "uid.inc";
+
+
+; ---   *   ---   *   ---
+; s-consts
+
+if ~defined ELF.ALIGN;
+  elf.align = $10;
+
+else
+  elf.align = ELF.ALIGN;
+
+end if;
 
 
 ; ---   *   ---   *   ---
@@ -214,10 +226,20 @@ macro fragment line {
 
   ; make new segment
   if @elf.ff = 0;
-    section dir.args type;
+    if elf.align = $00;
+      section dir.args type;
+
+    else;
+      section dir.args type align elf.align;
+
+    end if;
 
   else if @elf.ff = 1;
     segment readable type;
+    if elf.align;
+      align elf.align;
+
+    end if;
 
   end if;
 
@@ -398,6 +420,167 @@ macro FOOT {
 macro EOF {
   end if; IMPORT
   EOF;
+
+};
+
+
+; ---   *   ---   *   ---
+; [p]aste-[in] [b]lock
+;
+; alias for invoking macros defined
+; within the 'inline' namespace
+
+macro pinb name {inline.#name};
+
+
+; ---   *   ---   *   ---
+; replaces the default 'struc' keyword
+
+macro @elf.struc.inner name,glob,icen,addr {
+
+
+  ; we drop everything into virtual
+  ; to make instancing easier
+  virtual at addr;
+  if ~defined vmem.has.#name;
+    vmem.#name#::
+    glob#:
+
+    define vmem.has.#name 1;
+
+  end if;
+
+  ; user definition (via strucdef) pasted here
+  icen#:
+  @elf.struc.def.\##name;
+
+
+  ; get total size after fields!
+  sizeof.#name = $-glob;
+  end virtual;
+
+};
+
+; ---   *   ---   *   ---
+; ^interface
+
+macro @elf.struc name {
+
+
+  ; needed to reference the virtual block
+  local glob
+  glob equ ..#name;
+
+  macro name LINE \{
+
+    local ok;
+    ok equ 0;
+
+    ; 'addr' can be a register too ;>
+    match icen =at addr , LINE \\{
+      @elf.struc.inner name,glob,icen,addr;
+      ok equ 1;
+
+    \\};
+
+    ; ^or default to current position
+    match =0 icen , LINE \\{
+      @elf.struc.inner name,glob,icen,$;
+
+    \\};
+
+  \};
+
+};
+
+
+; ---   *   ---   *   ---
+; sum fields of multiple strucs
+
+macro @elf.struc.from_list [type] {
+  forward @elf.struc.def.\##type;
+
+};
+
+
+; ---   *   ---   *   ---
+; makes a struc from one or more definitions
+
+macro @elf.struc.ice NL& {
+
+  local ok;
+  ok equ 0;
+
+
+  match NAME =: LIST , NL \{
+    macro @elf.struc.def.\#\#NAME \\{
+      @elf.struc.from_list LIST;
+
+    \\};
+
+    @elf.struc NAME;
+    ok equ 1;
+
+  \};
+
+  match =0 NAME , ok NL \{
+    @elf.struc NAME;
+
+  \};
+
+};
+
+; ---   *   ---   *   ---
+; ^aliases for the madness
+
+strucdef fix macro @elf.struc.def.;
+struc fix @elf.struc.ice;
+
+
+; ---   *   ---   *   ---
+; ^make static instance
+
+macro static line {
+
+
+  ; fstate
+  local name;
+  local type;
+  local addr;
+  local ok;
+
+  ok equ 0;
+
+  ; ^parse args
+  match T N =at X , line \{
+    type equ T;
+    name equ N;
+    addr equ X;
+    ok   equ 1;
+
+  \};
+
+  match =0 T N , ok line \{
+    type equ T;
+    name equ N;
+    addr equ $;
+    ok   equ 1;
+
+  \};
+
+
+  ; copy definition from vmem
+  match T N X , type name addr \{
+    T N at X;
+    db sizeof.\#T dup $00;
+
+    repeat sizeof.\#T;
+      load  chunk byte  from vmem.\#T\#:..\#T+(%-1);
+      store byte  chunk at   N+(%-1);
+
+    end repeat;
+
+  \};
 
 };
 

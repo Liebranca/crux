@@ -62,6 +62,28 @@ macro @uint.genp2_bat [line] {
 
 
 ; ---   *   ---   *   ---
+; public inlines
+
+macro inline.urdivp2 {
+
+  ; get 2^N thru shift
+  mov rax,$01;
+  shl rax,cl;
+
+  ; ensure non-zero
+  mov   rdx,$01;
+  test  rdi,rdi;
+  cmove rdi,rdx;
+
+  ; (X + (2^N)-1) >> N
+  ; gives division rounded up
+  lea rax,[rdi+rax-$01];
+  shr rax,cl;
+
+};
+
+
+; ---   *   ---   *   ---
 ; deps
 
 ELF %;
@@ -80,23 +102,7 @@ fragment *;
 ; [1] cl  -> exponent
 
 public urdivp2;
-
-
-  ; get 2^N thru shift
-  mov rax,$01;
-  shl rax,cl;
-
-  ; ensure non-zero
-  mov   rdx,$01;
-  test  rdi,rdi;
-  cmove rdi,rdx;
-
-  ; (X + (2^N)-1) >> N
-  ; gives division rounded up
-  lea rax,[rdi+rax-$01];
-  shr rax,cl;
-
-
+  pinb urdivp2;
   ret;
 
 

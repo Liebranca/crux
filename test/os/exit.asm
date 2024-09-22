@@ -19,7 +19,7 @@ include '../../macro/elf.inc';
 
   TITLE     test.os.exit;
 
-  VERSION   v0.00.2;
+  VERSION   v0.00.3;
   AUTHOR    'IBN-3DILA';
 
 
@@ -27,7 +27,15 @@ include '../../macro/elf.inc';
 ; deps
 
 ELF *;
+  define BUFIO.SZ $00;
   include '../../os/exit.asm';
+
+
+; ---   *   ---   *   ---
+; ROM
+
+fragment %;
+  cstr.new throw.fatal_test,'SUCCESS',$0A;
 
 
 ; ---   *   ---   *   ---
@@ -35,8 +43,7 @@ ELF *;
 
 fragment *;
 entrypoint:
-  mov  rdi,FATAL;
-  call exit;
+  throw fatal_test;
 
 
 ; ---   *   ---   *   ---

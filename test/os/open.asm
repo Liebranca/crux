@@ -51,12 +51,12 @@ entrypoint:
   call open;
 
   ; ^close it!
-  mov rdi,rax;
-  inline.close;
+  mov  rdi,rax;
+  pinb close;
 
   ; delete file ;>
-  lea rdi,[m00];
-  inline.unlink;
+  lea  rdi,[m00];
+  pinb unlink;
 
 
   ; exit

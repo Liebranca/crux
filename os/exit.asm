@@ -20,7 +20,7 @@ include "../macro/elf.inc";
 
   TITLE     os.exit;
 
-  VERSION   v0.00.2a;
+  VERSION   v0.00.3a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -34,11 +34,41 @@ FATAL = $FF;
 
 linux.exit.id = $3C;
 
+stdin  = $00;
+stdout = $01;
+stderr = $02;
+
+
+; ---   *   ---   *   ---
+; public inlines
+
+macro inline.abort {
+  mov rax,linux.exit.id;
+  syscall;
+};
+
+macro throw me= {
+
+  match any , me \{
+    mov rdi,stderr;
+    mov rsi,throw.\#any;
+    mov rdx,throw.\#any\#.len;
+    mov rax,linux.write.id;
+    syscall;
+
+  \};
+
+  mov  rdi,FATAL;
+  pinb abort;
+
+};
+
 
 ; ---   *   ---   *   ---
 ; deps
 
 ELF %;
+  include "write.asm";
 
 
 ; ---   *   ---   *   ---
@@ -55,9 +85,7 @@ fragment *;
 public exit:
 
   ; TODO: 'onexit' callback list
-
-  mov rax,linux.exit.id;
-  syscall;
+  pinb abort;
 
 
 ; ---   *   ---   *   ---

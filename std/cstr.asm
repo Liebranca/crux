@@ -56,9 +56,11 @@ fragment *;
 ;
 ; [0] rdx -> bytes to check
 
-firstnull:
 
-macro inline.firstnull {
+cstrnull:
+
+; private inline
+macro inline.cstrnull {
 
   xor rcx,rcx
 
@@ -79,7 +81,7 @@ macro inline.firstnull {
 
 };
 
-  inline.firstnull;
+  pinb cstrnull;
   ret;
 
 
@@ -101,8 +103,8 @@ public cstrlen;
   ; get position of first null byte
   .top:
 
-  mov rdx,qword [rdi];
-  inline.firstnull;
+  mov  rdx,qword [rdi];
+  pinb cstrnull;
 
   ; ^end reached?
   test rcx,rcx;

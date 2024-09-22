@@ -34,6 +34,7 @@ linux.open:
   .read   = $0000;
   .write  = $0001;
   .flow   = $0002;
+  .dir    = $10000;
 
   .new    = $0040;
   .trunc  = $0200;
@@ -132,8 +133,7 @@ macro open.mode [list] {
 };
 
 ; ---   *   ---   *   ---
-; these are simple enough to
-; warrant inlining
+; public inlines
 
 macro inline.close {
   mov rax,linux.close.id;
@@ -202,7 +202,7 @@ public open:
 ; [0] rdi -> fd
 
 public close:
-  inline.close;
+  pinb close;
   ret;
 
 
@@ -210,7 +210,7 @@ public close:
 ; [0] rdi -> fname
 
 public unlink:
-  inline.unlink;
+  pinb unlink;
   ret;
 
 

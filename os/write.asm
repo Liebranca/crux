@@ -30,6 +30,10 @@ include "../macro/elf.inc";
 linux.write:
   .id = $01;
 
+stdin  = $00;
+stdout = $01;
+stderr = $02;
+
 
 ; ---   *   ---   *   ---
 ; deps
@@ -43,24 +47,23 @@ ELF %;
 
 fragment $;
 
-
   ; use default buffer size?
-  if ~defined BUFIO_SIZE;
-    bufio.size = $1000;
+  if ~defined BUFIO.SZ;
+    bufio.sz = $1000;
 
   else;
-    bufio.size = BUFIO_SIZE;
+    bufio.sz = BUFIO.SZ;
 
   end if;
 
   ; cap buffer size to 16-bit!
-  assert bufio.size < $10000;
+  assert bufio.sz < (1 shl 16);
 
   ; make new buffer
-  bufio.fd  dw $0001;
+  bufio.fd  dw stdout;
   bufio.ptr dw $0000;
 
-  buf.new bufio.mem,bufio.size;
+  buf.new bufio.mem,bufio.sz;
 
 
 ; ---   *   ---   *   ---
@@ -97,7 +100,7 @@ public write:
   ; have enough space?
   @@:
 
-  mov  rax,bufio.size;
+  mov  rax,bufio.sz;
   sub  rax,rdi;
   cmp  rax,rdx;
   jge  @f;
@@ -119,7 +122,7 @@ public write:
 
 
   ; cap write to buffer size!
-  mov   rax,bufio.size;
+  mov   rax,bufio.sz;
   cmp   rdx,rax;
   cmovg rdx,rax;
 
