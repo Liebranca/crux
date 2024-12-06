@@ -208,11 +208,13 @@ cstrcmp:
   call cstrlen;
 
   ; stop if unequal lengths!
-  pop  rdi;
-  mov  rdx,rax;
-  xor  rax,qword [rbp-$08];
-  test rax,rax;
-  jnz  @f;
+  pop    rdi;
+  mov    rdx,rax;
+  xor    rax,qword [rbp-$08];
+  xor    r8,r8;
+  test   rax,rax;
+  cmovnz rax,r8;
+  jnz    @f;
 
   ; equal lengths, so compare!
   call memcmp;
@@ -226,6 +228,24 @@ cstrcmp:
 
 
 ; ---   *   ---   *   ---
+; dump cstr to fout
+;
+; [0] rdi -> cstr
+; [1] rsi -> cat newline
+
+public cstrput:
+
+  push rsi;
+  call cstrlen;
+
+  mov  rsi,rdi;
+  pop  rdi;
+  mov  rdx,rax;
+  call write;
+  ret;
+
+
+; ---   *   ---   *   ---
 ; adds to your namespace
 
 FOOT;
@@ -233,6 +253,7 @@ FOOT;
   extrn cstrnext;
   extrn cstrcpy;
   extrn cstrcmp;
+  extrn cstrput;
 
 EOF;
 

@@ -75,8 +75,9 @@ fragment *;
 ; ---   *   ---   *   ---
 ; put data in buffer
 ;
-; [0] rsi -> ptr to buf
-; [1] rdx -> bytes to write
+; [0] rdi -> cat newline
+; [1] rsi -> ptr to buf
+; [2] rdx -> bytes to write
 ;
 ; [<] rax -> flush triggered
 
@@ -94,8 +95,9 @@ public write:
 
 
   ; get avail space in buffer
-  xor rdi,rdi;
-  mov di,word [bufio.ptr];
+  push rdi;
+  xor  rdi,rdi;
+  mov  di,word [bufio.ptr];
 
   ; have enough space?
   @@:
@@ -145,11 +147,59 @@ public write:
   jnz  .top;
 
 
-  ; cleanup and give
+  ; cat newline?
+  pop  rdi;
+  test rdi,rdi;
+  jz   @f;
+
+  mov  dil,$0A;
+  call putc;
+
+  or   al,byte [rbp-$09]
+
+  leave;
+  ret;
+
+
+  ; no newline!
+  @@:
   xor rax,rax;
   mov al,byte [rbp-$09];
 
   leave;
+  ret;
+
+
+; ---   *   ---   *   ---
+; ^single byte!
+;
+; [0] rdi -> char to put
+;
+; [<] rax -> bytes commited
+
+public putc;
+
+  ; flush if out of space
+  xor  rdx,rdx;
+  mov  dx,word [bufio.ptr];
+  cmp  dx,bufio.sz;
+  jl   @f;
+
+  push rdi;
+  call flush;
+
+  pop  rdi;
+  xor  rax,rax;
+  mov  rax,$01;
+
+
+  ; set byte
+  @@:
+
+  lea rsi,[bufio.mem];
+  mov byte [rsi+rdx],dil;
+  inc word [bufio.ptr];
+
   ret;
 
 
@@ -211,6 +261,7 @@ public fout:
 ; adds to your namespace
 
 FOOT;
+  extrn putc;
   extrn write;
   extrn flush;
   extrn fout;

@@ -19,7 +19,7 @@ include '../../macro/elf.inc';
 
   TITLE     test.os.getdents;
 
-  VERSION   v0.00.1a;
+  VERSION   v0.00.3a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -27,6 +27,10 @@ include '../../macro/elf.inc';
 ; deps
 
 ELF *;
+
+  define CASK.LIST $10:$200;
+
+  include '../../os/mmap.asm';
   include '../../os/getdents.asm';
   include '../../os/write.asm';
   include '../../os/exit.asm';
@@ -38,97 +42,131 @@ ELF *;
 ; ROM
 
 fragment %;
-  cstr.new fname,'./test';
+  cstr.new CURDIR,'.';
+  cstr.new PARDIR,'..';
+  cstr.new FNAME,'./test/';
 
 
 ; ---   *   ---   *   ---
 ; GBL
 
 fragment $;
-  d00.ptr dq $00;
-  buf.new d00,$200;
+  mainmem db (alloct.req+$10*$200) dup $00
 
 
 ; ---   *   ---   *   ---
 ; EXE
 
 fragment *;
-entrypoint:
 
 
-  ; setup stack
-  push rbp;
-  mov  rbp,rsp;
-  sub  rsp,$04;
+; ---   *   ---   *   ---
+; get fname from dirent and print
+;
+; [0] rbx -> dirent ptr
+; [1] rdi -> nullargs
+;
+; [<] rax -> do nothing
 
-  define fd   rbp-$02;
-  define left rbp-$04;
+dirprint:
 
-
-  ; open dir
-  lea  rdi,[fname];
-  xor  rdx,rdx;
-  open.flags dir,read;
-  call open;
-
-  ; ^backup
-  mov word [fd],ax;
-
-
-  ; walk directory
-  .top:
-
-  xor  rdi,rdi;
-  mov  di,word [rbp-$02];
-  lea  rsi,[d00];
-  mov  rdx,d00.len;
-  call nextdir;
-
-  ; no more?
-  test rax,rax;
-  jz   .cleanup;
-
-  mov word [left],ax;
-
-
-  ; ^print name of entry!
-  .dump:
-
-  mov  rdi,qword [d00.ptr];
-  lea  rdi,[d00+rdi];
-  add  rdi,linux.dirent.fname;
-  call cstrlen;
-
-  mov  rsi,rdi;
-  mov  byte [rsi+rax],$0A;
-  lea  rdx,[rax+1];
-  call write;
-
-  ; go next
-  mov  dx, word [d00+linux.dirent.len];
-  sub  word [left],dx;
-  add  qword [d00.ptr],rdx;
-
-  mov  dx,word [left];
-  test dx,dx;
-  jnz  .dump;
-  jmp  .top;
-
-
-  ; close dir
-  .cleanup:
-
+  lea  rdi,[rbx+linux.dirent.fname];
+  mov  rsi,$01;
+  call cstrput;
   call flush;
 
-  xor  rdi,rdi;
-  mov  di,word [rbp-$02];
-  pinb close;
+  mov  rax,dirwalk.noop;
+  ret;
 
-  ; exit
-  restore fd;
-  restore left;
 
-  leave;
+; ---   *   ---   *   ---
+; ^recursively
+;
+; [0] rbx -> dirent ptr
+; [1] rdi -> filter fptr
+;
+; [<] rax -> recurse or do nothing
+
+rec_dirprint:
+
+  ; get whether this fname is excluded
+  mov  rax,rdi;
+  lea  rdi,[rbx+linux.dirent.fname];
+  call rax;
+
+  test rax,rax;
+  jz   @f;
+
+
+  ; print name
+  call dirprint;
+
+  ; recurse on directory
+  xor rdx,rdx;
+  mov dx,word [rbx+linux.dirent.len];
+  sub dx,1;
+  mov dl,byte [rdx+rbx];
+  cmp dl,linux.getdents.dir;
+  jnz @f;
+
+  mov  rax,dirwalk.recurse;
+  ret;
+
+  ; ^else do nothing
+  @@:
+
+  mov rax,dirwalk.noop;
+  ret;
+
+
+; ---   *   ---   *   ---
+; discard fname if it's '.' or '..'
+;
+; [0] rdi -> fname
+;
+; [<] rax -> true if valid
+
+dotfilter:
+
+  push rdi;
+  lea  rsi,[CURDIR];
+  call cstrcmp;
+
+  pop  rdi;
+  test rax,rax;
+  jz   @f;
+  not  rax;
+  and  rax,$01;
+  ret;
+
+  @@:
+
+  lea   rsi,[PARDIR];
+  call  cstrcmp;
+  not   rax;
+  and   rax,$01;
+  ret;
+
+
+; ---   *   ---   *   ---
+; walk directory and print fname of each entry!
+
+entrypoint:
+
+  ; startup
+  lea  rdi,[mainmem];
+  call begalloc;
+
+  ; print entire directory structure
+  lea  rdi,[FNAME];
+  xor  rsi,rsi;
+  lea  r10,[rec_dirprint];
+  lea  r8,[dotfilter];
+  call dirwalk;
+
+
+  ; cleanup and give
+  call endalloc;
 
   mov  rdi,OK;
   call exit;

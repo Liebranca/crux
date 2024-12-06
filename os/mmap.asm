@@ -69,7 +69,6 @@ macro @mmap.proc_casks [item] {
   \};
 
   common;
-
     alloct.step    = step;
     alloct.cap     = step;
     alloct.mask_sz = mask.sz;
