@@ -430,7 +430,7 @@ macro EOF {
 ; alias for invoking macros defined
 ; within the 'inline' namespace
 
-macro pinb name {inline.#name};
+macro pinb name,args= {inline.#name args};
 
 
 ; ---   *   ---   *   ---
