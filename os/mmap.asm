@@ -353,13 +353,30 @@ match elem , E {
 
   ; fill out meta
   @@:
-
+;
   mov word [elem#.cap],di;
   mov word [elem#.ezy],si;
 
   ; restore and give
   pop rbx;
   ret;
+
+};
+
+restore E;
+
+
+; ---   *   ---   *   ---
+; release table entry
+;
+; [0] rdi -> 
+
+public free:
+
+lis alloct E at rdi;
+match elem , E {
+
+  
 
 };
 
@@ -375,6 +392,7 @@ FOOT;
   extrn begalloc;
   extrn endalloc;
   extrn alloc;
+  extrn free;
 
 EOF;
 

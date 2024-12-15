@@ -12,8 +12,10 @@
 ; ---   *   ---   *   ---
 ; info
 
-define VERSION v0.00.1a;
-define AUTHOR  'IBN-3DILA';
+  TITLE     uid;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -22,11 +24,17 @@ define AUTHOR  'IBN-3DILA';
 ; doesn't make sense,
 ; but it works ;>
 
-macro uid.new dst,prefix,_nullarg& {
+macro new dst,prefix,_nullarg&;
   local UID;
   dst equ prefix#UID;
 
-};
+end macro;
+
+
+; ---   *   ---   *   ---
+; FOOT
+
+EOF;
 
 
 ; ---   *   ---   *   ---

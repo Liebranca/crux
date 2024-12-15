@@ -39,7 +39,7 @@ stderr = $02;
 ; deps
 
 ELF %;
-  include "../std/mem.asm";
+  include "../std/memcpy.asm";
 
 
 ; ---   *   ---   *   ---

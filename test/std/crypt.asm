@@ -26,7 +26,6 @@ include '../../macro/elf.inc'
 ; ---   *   ---   *   ---
 ; s-consts
 
-
 ; ---   *   ---   *   ---
 ; deps
 
@@ -39,24 +38,7 @@ ELF *;
 ; RAM
 
 fragment $;
-
-  define EZY $10;
-  define CAP $04;
-
-  macro makepool {
-    local total;
-    total = CAP;
-
-    while total > 0;
-      dq $00;
-      total = total-64;
-
-    end while;
-
-  };
-
-  head: db sizeof.mmask_t dup $00;
-  pool: makepool;
+  cask.new main $10:$04;
 
 
 ; ---   *   ---   *   ---
@@ -65,12 +47,12 @@ fragment $;
 fragment *;
 entrypoint:
 
-  mov  di,EZY;
-  mov  si,CAP;
-  lea  rbx,[head];
+  mov  di,main.ezy;
+  mov  si,main.cap;
+  lea  rbx,[main.head];
   call mmask;
 
-  mov  rax,EZY*3;
+  mov  rax,main.ezy*3;
   call mmaskep2;
   call mmaskfit;
 

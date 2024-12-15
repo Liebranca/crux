@@ -28,7 +28,7 @@ include '../../macro/elf.inc';
 
 ELF *;
   include '../../std/cstr.asm';
-  include '../../std/mem.asm';
+  include '../../std/memcpy.asm';
   include '../../os/exit.asm';
 
 

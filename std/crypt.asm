@@ -79,7 +79,7 @@ struc mmask_t;
 ; deps
 
 ELF %;
-  include 'mem.asm';
+  include 'memcpy.asm';
   include 'uint.asm';
 
 
@@ -92,9 +92,9 @@ fragment *;
 ; ---   *   ---   *   ---
 ; make mmask
 ;
+; [*] rbx -> ptr to mem or null for alloc
 ; [0] di  -> ezy
 ; [1] si  -> cap
-; [2] rbx -> ptr to mem or null for alloc
 ;
 ; [<] rbx -> ice
 
@@ -241,7 +241,7 @@ mmaske.result:
 ;
 ; [<] rax -> slot idex ($40 on fail!)
 
-public mmaskfit;
+public mmaskfit:
 
 lis mmask_t SELF at rbx;
 match self , SELF {

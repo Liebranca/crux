@@ -28,7 +28,7 @@ include "../macro/elf.inc";
 ; deps
 
 ELF %;
-  include "mem.asm";
+  include "memcpy.asm";
 
 
 ; ---   *   ---   *   ---

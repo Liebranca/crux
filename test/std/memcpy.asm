@@ -1,5 +1,5 @@
 ; ---   *   ---   *   ---
-; TEST STD MEM
+; TEST STD MEMCPY
 ;
 ; LIBRE SOFTWARE
 ; Licensed under GNU GPL3
@@ -27,7 +27,7 @@ include '../../macro/elf.inc';
 ; deps
 
 ELF *;
-  include '../../std/mem.asm';
+  include '../../std/memcpy.asm';
   include '../../os/exit.asm';
 
 

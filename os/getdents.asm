@@ -20,7 +20,7 @@ include '../macro/elf.inc'
 
   TITLE     os.getdents;
 
-  VERSION   v0.00.3a;
+  VERSION   v0.00.4a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -86,17 +86,12 @@ fragment *;
 
 public chdir:
 
-  push rdi;
   mov  rax,linux.chdir.id;
   syscall;
 
-  pop  rdi;
   test rax,rax;
   jz   @f;
 
-  mov   rsi,$01;
-  call  cstrput;
-  call  flush;
   throw chdir;
 
   @@:ret;
@@ -289,8 +284,6 @@ match ctx , CTX {
 
   ; close dir
   .bot:
-
-  call flush;
 
   xor  rdi,rdi;
   mov  di,word [ctx#.fd];

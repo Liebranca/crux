@@ -44,7 +44,7 @@ ELF *;
 fragment %;
   cstr.new CURDIR,'.';
   cstr.new PARDIR,'..';
-  cstr.new FNAME,'./test/';
+  cstr.new FNAME,'../avtomat/sys/';
 
 
 ; ---   *   ---   *   ---
@@ -73,7 +73,6 @@ dirprint:
   lea  rdi,[rbx+linux.dirent.fname];
   mov  rsi,$01;
   call cstrput;
-  call flush;
 
   mov  rax,dirwalk.noop;
   ret;
@@ -163,6 +162,7 @@ entrypoint:
   lea  r10,[rec_dirprint];
   lea  r8,[dotfilter];
   call dirwalk;
+  call flush;
 
 
   ; cleanup and give

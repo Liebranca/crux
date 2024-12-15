@@ -1,6 +1,6 @@
 ; ---   *   ---   *   ---
-; MEM
-; You can't handle it!
+; MEMCPY
+; Bat-mov
 ;
 ; LIBRE SOFTWARE
 ; Licensed under GNU GPL3
@@ -18,7 +18,7 @@ include "../macro/elf.inc";
 ; ---   *   ---   *   ---
 ; info
 
-  TITLE     std.mem;
+  TITLE     std.memcpy;
 
   VERSION   v0.00.5a;
   AUTHOR    'IBN-3DILA';
