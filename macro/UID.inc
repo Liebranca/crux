@@ -12,7 +12,7 @@
 ; ---   *   ---   *   ---
 ; info
 
-  TITLE     uid;
+  TITLE     UID;
 
   VERSION   v0.00.2a;
   AUTHOR    'IBN-3DILA';
@@ -25,8 +25,30 @@
 ; but it works ;>
 
 macro new dst,prefix,_nullarg&;
+
+
+  ; generate symbol?
   local UID;
-  dst equ prefix#UID;
+  if ~definite $non.UID.prefix.UIDCNT;
+    $non.UID.prefix.UIDCNT=0;
+
+  ; ^reuse and up the count
+  else;
+    $non.UID.prefix.UIDCNT=$non.UID.prefix.UIDCNT+1;
+
+  end if;
+
+  ; make link to current value of symbol
+  repeat 1, i:$non.UID.prefix.UIDCNT;
+    UID equ i;
+
+  end repeat;
+
+  ; ^append value to prefix
+  match n pre, UID prefix;
+    dst equ pre#n;
+
+  end match;
 
 end macro;
 

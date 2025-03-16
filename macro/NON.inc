@@ -14,6 +14,41 @@
 
 if ~definite $non.loaded;
 
+
+; ---   *   ---   *   ---
+; dirty self->macro_name(args) impl
+;
+; we need this because macros have no context,
+; and so a package cannot find the macros defined
+; within itself if the name is incomplete
+
+define @CAS $non;
+define %ICE @CAS;
+macro self:PA&;
+
+  match ice , %ICE;
+    match =-=> proc (args) , PA;
+      ice.proc ice,args;
+
+    else match =-=> proc () , PA;
+      ice.proc ice;
+
+    else match cas , @CAS;
+      %ICE equ cas.PA;
+
+    end match;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; now we begin the motherscope proper
+;
+; *everything* the user ever wants to do should go
+; on a namespace under non
+
   $non:
   namespace $non;
 
@@ -47,84 +82,13 @@ end macro;
 
 
 ; ---   *   ---   *   ---
-; ^deps
+; deps
 
   MODULAR_DEP USE_IMPORTER,1,\
-    <'TAB.inc','PKG.inc','IMP.inc'>;
+    <'PKG.inc','IMP.inc'>;
 
-  MODULAR_DEP USE_EMITTER,1,<'EMAN.inc'>;
-
-
-; ---   *   ---   *   ---
-; guts v, fills out optional value list
-;
-; [0] namespace root to write values to
-; [1] <key:value> list of possible options 'D'
-; [2] <key:value> list of passed values 'P'
-;
-; [<] fill out dst with the passed value if present
-;     else fall back to default value!
-
-macro ODEF.inner dst,DP&;
-
-  ; unroll args
-  local left;
-  match id <def> <pass> , dst DP;
-    left equ pass;
-
-    ; walk the default value list
-    irp d , def;
-      match dkey:dvalue , d;
-
-        ; set default value, then pluck from passed;
-        ; if found, it will overwrite default!
-        local elem;
-        elem equ dvalue;
-
-        ; ^{...},key:value,{...}
-        match rem=,=dkey:value=,rem2 , left;
-          elem reequ value;
-          left reequ rem,rem2
-
-        ; ^key:value,{...}
-        else match =dkey:value=,rem , left;
-          elem reequ value;
-          left reequ rem;
-
-        ; ^{...},key:value
-        else match rem=,=dkey:value , left;
-          elem reequ value;
-          left reequ rem;
-
-        ; ^key:value
-        else match =dkey:value , left;
-          elem reequ value;
-
-        end match;
-
-
-        ; ^assign either passed or default ;>
-        id.dkey equ elem;
-
-      end match;
-
-    end irp;
-
-  end match;
-
-end macro;
-
-
-; ---   *   ---   *   ---
-; ^interface
-
-macro ODEF dst,default,passed:nullargs;
-  match <D> , <default>;
-    $non.ODEF.inner dst,<D> <passed>;
-
-  end match;
-
-end macro;
+  MODULAR_DEP USE_EMITTER,1,\
+    <'TAB.inc','UID.inc','EMAN.inc'>;
 
 
 ; ---   *   ---   *   ---

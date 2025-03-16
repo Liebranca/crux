@@ -14,7 +14,7 @@
 
   TITLE     EMAN;
 
-  VERSION   v0.00.2a;
+  VERSION   v0.00.3a;
   AUTHOR    'IBN-3DILA';
 
 
@@ -25,136 +25,268 @@
 
 
 ; ---   *   ---   *   ---
-; cat line to captured code
+; GBL
 
-macro $non.cmacro.catline line&;
+  EMAN.CCAPT    equ;
+  EMAN.CLVL     equ 0;
 
-  match <len:any> , $non.cmacro.CCAPT;
-    $non.cmacro.CCAPT reequ\
-      <len+1:any $non.NULL line>;
-
-  else match <len:> , $non.cmacro.CCAPT;
-    $non.cmacro.CCAPT reequ <len+1:line>;
-
-  end match;
-
-end macro;
+  EMAN.BLK_LIST equ 'match','macro','if';
 
 
 ; ---   *   ---   *   ---
-; generate contex-rich macro with captured code ;>
+; recognize block/end block
 
-macro $non.cmacro.paste scope,name,argline&;
+macro parseblk.inner \
+  $non_EMAN_parseblk_inner_ok,\
+  $non_EMAN_parseblk_inner_keyw;
 
-  match <CODE> , $non.cmacro.CCAPT;
-  match len:code , CODE;
-    macro name argline;
-    macro_scope scope;
+  $non_EMAN_parseblk_inner_ok equ 0;
 
-      local buf;
-      buf equ code;
+  ; does keyword end the current block?
+  if `$non_EMAN_parseblk_inner_keyw = 'end';
+    $non_EMAN_parseblk_inner_ok equ 2;
 
-      repeat len;
-        match any =$non.NULL left , buf;
-          any;
-          buf equ left;
+  ; does keyword begin a new block?
+  else;
+    match _LIST , EMAN.BLK_LIST;
+      irp _K , _LIST;
+        if _K = `$non_EMAN_parseblk_inner_keyw;
+          $non_EMAN_parseblk_inner_ok equ 1;
+          break;
 
-        else match any , buf;
-          any;
+        end if;
 
-        end match;
-
-      end repeat;
-
-    end macro_scope;
-    end macro;
-
-  end match;
-  end match;
-
-end macro;
-
-
-; ---   *   ---   *   ---
-; adds context data to macros
-;
-; this makes it so you don't have to
-; write the full path to find a macro
-; from within another, when called from
-; a different namespace
-
-macro $non.macro_scope path;
-  $non.EMAN.MACROSCOPE equ path;
-
-end macro;
-
-macro end?.macro_scope;
-  restore $non.EMAN.MACROSCOPE;
-
-end macro;
-
-
-; ---   *   ---   *   ---
-; ^such context-rich macros have to
-; ^be invoked as such...
-
-macro $non.cmcall name,args&;
-  match path , $non.EMAN.MACROSCOPE;
-    path.name args;
-
-  end match;
-
-end macro;
-
-
-; ---   *   ---   *   ---
-; ^AND must be defined as such...
-
-macro $non.cmacro! NA&;
-
-  ; parse args
-  local _name;
-  local _argline;
-  local _scope;
-
-  match name argline , NA;
-    _name    equ name;
-    _argline equ argline;
-
-  else match name , NA;
-    _name    equ name;
-    _argline equ nullargs:;
-
-  end match;
-
-  ; get scope in which macro is defined!
-  match par own , $pkginfo.PAR $pkginfo.OWN;
-    _scope equ par.own;
-
-  end match;
-
-
-  ; begin capture
-  $non.cmacro.CCAPT equ <0:>;
-
-  macro ?! line&;
-  match (scope) name argline ,\
-        (_scope) _name _argline;
-
-    ; terminate capture?
-    if `line = 'end cmacro';
-      $non.cmacro.paste scope,name,argline;
-      restore $non.cmacro.CCAPT;
-      purge   ?;
-
-    ; append line to result?
-    else match nblank , line;
-      $non.cmacro.catline nblank;
+      end irp;
 
     end match;
 
+  end if;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; detect blk beg/end lines and
+; redirect them to offbuf
+
+macro parseblk \
+  $non_EMAN_parseblk_out,\
+  $non_EMAN_parseblk_line&;
+
+  match keyw argline , $non_EMAN_parseblk_line;
+
+    local ok;
+    EMAN.parseblk.inner ok,keyw;
+
+
+    ; begin new block?
+    match =1 , ok;
+
+      $non_EMAN_parseblk_out equ 0;
+
+      local uid;
+      UID.new uid,$non.EMAN.BLK;
+
+      match id , uid;
+
+        EMAN.catline.inner EMAN.CCAPT,\
+          CATBLK (id) keyw argline;
+
+        EMAN.CLVL  equ id;
+        id.codestr equ <0:>;
+
+      end match;
+
+    ; ^end of current block
+    else match =2 , ok;
+      $non_EMAN_parseblk_out equ 0;
+      restore EMAN.CLVL;
+
+    end match;
+
+
   end match;
-  end macro;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; cat line to buf
+
+macro catline.inner \
+  $non_EMAN_catline_inner_dst,\
+  $non_EMAN_catline_inner_line&;
+
+  match <len:any> , \
+    $non_EMAN_catline_inner_dst;
+
+    $non_EMAN_catline_inner_dst reequ\
+      <len+1:any $non.NULL \
+       $non_EMAN_catline_inner_line>;
+
+  else match <len:> , \
+    $non_EMAN_catline_inner_dst;
+
+    $non_EMAN_catline_inner_dst reequ\
+      <len+1:$non_EMAN_catline_inner_line>;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; cat line to captured code
+
+macro catline $non_EMAN_catline_line&;
+
+  ; get which block to cat to
+  local ok;
+  ok equ 1;
+
+  EMAN.parseblk ok,$non_EMAN_catline_line;
+
+  ; cat to main block?
+  match =1 =0 , ok EMAN.CLVL;
+    EMAN.catline.inner EMAN.CCAPT,\
+      $non_EMAN_catline_line;
+
+  ; ^cat to nested block?
+  else match =1 dst , ok EMAN.CLVL;
+    EMAN.catline.inner dst.codestr,\
+      $non_EMAN_catline_line;
+
+  end match;
+
+end macro;
+
+; ---   *   ---   *   ---
+; confused yet? ;>
+;
+; this simply copies processed lines into the
+; generated macro after capture is done
+
+macro pasteline.proc.inner:\
+  $non_EMAN_pasteline_inner_line,\
+  $non_EMAN_pasteline_inner_left,\
+  $non_EMAN_pasteline_inner_src;
+
+  $non_EMAN_pasteline_inner_src reequ\
+    $non_EMAN_pasteline_inner_left;
+
+  match line , $non_EMAN_pasteline_inner_line;
+    esc line;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; ^the line-processing in question
+
+macro pasteline.proc:\
+  $non_EMAN_pasteline_proc_line,\
+  $non_EMAN_pasteline_proc_left,\
+  $non_EMAN_pasteline_proc_src
+
+  ; input is F ARGS;
+  match keyw argline , \
+        $non_EMAN_pasteline_proc_line;
+
+    ; pasting an entire block? then recurse
+    if `keyw = 'CATBLK';
+      match (id) blk args , argline;
+
+        match <len:code> , id.codestr;
+          blk args;
+            EMAN.paste <code>,len;
+
+          end blk;
+
+        end match;
+
+      end match;
+
+
+    ; ^nope, pasting single-line
+    else;
+      EMAN.pasteline.proc.inner \
+        <$non_EMAN_pasteline_proc_line>,\
+        <$non_EMAN_pasteline_proc_left>,\
+        <$non_EMAN_pasteline_proc_src>;
+
+    end if;
+
+
+  ; ^input is just plain F;
+  else;
+    EMAN.pasteline.proc.inner \
+      <$non_EMAN_pasteline_proc_line>,\
+      <$non_EMAN_pasteline_proc_left>,\
+      <$non_EMAN_pasteline_proc_src>;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; ^entrypoint for line processing
+
+macro pasteline:\
+  $non_EMAN_pasteline_src,\
+  $non_EMAN_pasteline_term;
+
+  local line,left;
+
+  ; line TERM {...}
+  match <line =$non_EMAN_pasteline_term left> ,\
+        <$non_EMAN_pasteline_src>;
+
+    EMAN.pasteline.proc \
+      <line>,<left>,<$non_EMAN_pasteline_src>
+
+  ; ^last line
+  else match <line> , <$non_EMAN_pasteline_src>;
+
+    EMAN.pasteline.proc \
+      <line>,<>,<$non_EMAN_pasteline_src>
+
+  ; ^empty buffer, term outer loop
+  else;
+    break;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; iterates over captured lines and
+; pastes them into calling scope
+
+macro paste:\
+  $non_EMAN_paste_code,\
+  $non_EMAN_paste_len,\
+  $non_EMAN_paste_nullargs&;
+
+  local buf;
+  local term;
+
+  buf  equ $non_EMAN_paste_code;
+  term equ $non.NULL;
+
+  ; this is the outer loop we break out of from
+  ; inside pasteline
+  match T , term;
+
+    repeat $non_EMAN_paste_len;
+      EMAN.pasteline <buf>,T;
+
+    end repeat;
+
+  end match;
 
 end macro;
 
@@ -162,7 +294,7 @@ end macro;
 ; ---   *   ---   *   ---
 ; default line processing during capture
 
-macro $non.capture.asis ok,dst,src;
+macro $non.capture.asis ok,dst,src&;
   ok  equ 1;
   dst equ src;
 
@@ -170,19 +302,22 @@ end macro;
 
 
 ; ---   *   ---   *   ---
-; default for capture beg
+; paste wrapper
 
-macro $non.capture.pre;
-end macro;
+macro $non.capture.post \
+  $non_capture_post_proc,\
+  $non_capture_post_procargs,\
+  $non_capture_post_argline&;
 
+  match <CODE> , EMAN.CCAPT;
+    match <len:code> , <CODE>;
+      $non_capture_post_proc <code>,len,\
+        <$non_capture_post_procargs>,\
+        $non_capture_post_argline;
 
-; ---   *   ---   *   ---
-; default for capture end
+    end match;
 
-macro $non.capture.post id,pre,argline:;
-
-  pre;
-  display `id,' ',`argline;
+  end match;
 
 end macro;
 
@@ -190,45 +325,50 @@ end macro;
 ; ---   *   ---   *   ---
 ; map clines to proc
 
-macro $non.capture name,O:$non.NULL;
+macro $non.capture \
+  $non_capture_name,\
+  $non_capture_procargs,\
+  $non_capture_O:$non.NULL;
 
   ; make 'end [name]' the default block term
   local ender_s;
-  match any , name;
+  match any , $non_capture_name;
     ender_s equ end any;
 
   end match;
 
   ; generate new macro!
-  macro name id,argline&;
+  macro $non_capture_name $non_capture_argline&;
 
     ; default options
     local DEFAULT;
     match s , ender_s;
-      DEFAULT equ proc:$non.capture.asis,\
-                  ender:`s,\
-                  pre:$non.capture.pre,\
-                  post:$non.capture.post;
+      DEFAULT equ lproc:$non.capture.asis,\
+                  cproc:EMAN.paste,\
+                  ender:`s;
 
     end match;
 
     ; ^replace defaults with passed values!
-    local opt;
-    ODEF  opt,<DEFAULT>,<O>;
+    local      opt;
+    TAB.defnit opt,<DEFAULT>,<$non_capture_O>;
 
 
     ; begin capture block
-    $non.cmacro.CCAPT equ <0:>;
+    EMAN.CCAPT equ <0:>;
+
     macro ?! line&;
-    match (pre)(proc)(ender)(post) ,\
-          (opt.pre)(opt.proc)(opt.ender)(opt.post);
+    match (lproc)(cproc)(ender) ,\
+          (opt.lproc)(opt.cproc)(opt.ender);
 
       ; terminate block?
       if `line = ender;
 
-        post    id,pre,argline;
+        $non.capture.post \
+          cproc,<$non_capture_procargs>,\
+                $non_capture_argline;
 
-        restore $non.cmacro.CCAPT;
+        restore EMAN.CCAPT;
         purge   ?;
 
       ; ^process next line
@@ -236,17 +376,17 @@ macro $non.capture name,O:$non.NULL;
 
         local ok;
         local eline;
-        proc  ok,eline,line;
+        lproc ok,eline,line;
 
         ; append line to result?
         match =1 nblank , ok eline;
-          $non.cmacro.catline nblank;
+          EMAN.catline nblank;
 
         end match;
 
       end if;
 
-    end match; ODEF
+    end match; defnit
     end macro; capture
 
   end macro;

@@ -10,9 +10,12 @@
 ; lyeb,
 
 ; ---   *   ---   *   ---
-; HEAD
+; info
 
-if ~definite $non.loaded.LIST;
+  TITLE     LIST;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
@@ -84,8 +87,7 @@ end macro;
 ; ---   *   ---   *   ---
 ; FOOT
 
-$non.loaded.LIST=1;
-end if; $non.loaded.LIST
+EOF;
 
 
 ; ---   *   ---   *   ---

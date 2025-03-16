@@ -20,7 +20,7 @@ if ~definite $non.loaded.PKG;
 ; ---   *   ---   *   ---
 ; associate values to package!
 
-macro PKG.NEW_FIELD line;
+macro $non.PKG.NEW_FIELD line;
 
   match f v , line;
     $pkg.f equ v;
@@ -58,8 +58,9 @@ macro TITLE name;
     $non.PKG.cpkg equ name;
     $non.loaded.name = 1;
 
-    name:
-    namespace name;
+    $non.name:
+    namespace $non.name;
+    %ICE  equ $non.name;
 
     $pkginfo.OWN equ name;
     $pkginfo.PAR equ parent;
@@ -69,6 +70,7 @@ end macro;
 
 macro EOF;
     end namespace;
+    restore %ICE;
     restore $non.PKG.cpkg;
     restore $non.PKG.cclan;
   end if;
@@ -112,7 +114,7 @@ end macro;
 ; the importer uses this protection by default,
 ; you bypass it by simply using 'include' yourself!
 
-macro PKG.backup_path dst;
+macro $non.PKG.backup_path dst;
 
   match any:name , $non.PKG.cclan;
     dst equ name;
@@ -125,7 +127,7 @@ macro PKG.backup_path dst;
 
 end macro;
 
-macro PKG.restore_path src;
+macro $non.PKG.restore_path src;
   match any , src;
     namespace any;
 
@@ -137,14 +139,14 @@ end macro;
 ; ---   *   ---   *   ---
 ; ^iface
 
-macro PKG.include fpath;
+macro $non.PKG.include fpath;
 
   local cpkg;
 
-  PKG.backup_path cpkg;
+  $non.PKG.backup_path cpkg;
   include `fpath;
 
-  PKG.restore_path cpkg;
+  $non.PKG.restore_path cpkg;
 
 end macro;
 
@@ -152,7 +154,7 @@ end macro;
 ; ---   *   ---   *   ---
 ; print info for package!
 
-macro PKG.printx name,field;
+macro $non.PKG.printx name,field;
 
   display $0A,`name,$0A;
 
@@ -167,7 +169,7 @@ macro PKG.printx name,field;
 
 end macro;
 
-macro PKG.printall name;
+macro $non.PKG.printall name;
   match <list> , name.$pkginfo.field;
     PKG.printx name,<list>;
 
@@ -175,7 +177,7 @@ macro PKG.printall name;
 
 end macro;
 
-macro PKG.print name:;
+macro $non.PKG.print name:;
   match any , name;
     PKG.printall any;
 

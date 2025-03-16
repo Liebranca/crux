@@ -10,13 +10,16 @@
 ; lyeb,
 
 ; ---   *   ---   *   ---
-; HEAD
+; info
 
-if ~definite $non.loaded.TAB;
+  TITLE     TAB;
+
+  VERSION   v0.00.2a;
+  AUTHOR    'IBN-3DILA';
 
 
 ; ---   *   ---   *   ---
-; ^sets value on table
+; sets value on table
 
 macro TAB.set dst,key,e;
 
@@ -112,10 +115,81 @@ end macro;
 
 
 ; ---   *   ---   *   ---
+; guts v, fills out optional value list
+;
+; [0] namespace root to write values to
+; [1] <key:value> list of possible options 'D'
+; [2] <key:value> list of passed values 'P'
+;
+; [<] fill out dst with the passed value if present
+;     else fall back to default value!
+
+macro TAB.defnit.inner dst,DP&;
+
+  ; unroll args
+  local left;
+  match id <def> <pass> , dst DP;
+    left equ pass;
+
+    ; walk the default value list
+    irp d , def;
+      match dkey:dvalue , d;
+
+        ; set default value, then pluck from passed;
+        ; if found, it will overwrite default!
+        local elem;
+        elem equ dvalue;
+
+        ; ^{...},key:value,{...}
+        match rem=,=dkey:value=,rem2 , left;
+          elem reequ value;
+          left reequ rem,rem2
+
+        ; ^key:value,{...}
+        else match =dkey:value=,rem , left;
+          elem reequ value;
+          left reequ rem;
+
+        ; ^{...},key:value
+        else match rem=,=dkey:value , left;
+          elem reequ value;
+          left reequ rem;
+
+        ; ^key:value
+        else match =dkey:value , left;
+          elem reequ value;
+
+        end match;
+
+
+        ; ^assign either passed or default ;>
+        id.dkey equ elem;
+
+      end match;
+
+    end irp;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; ^interface
+
+macro TAB.defnit dst,default,passed:nullargs;
+  match <D> , <default>;
+    TAB.defnit.inner dst,<D> <passed>;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
 ; FOOT
 
-$non.loaded.TAB = 1;
-end if; $non.loaded.TAB
+EOF;
 
 
 ; ---   *   ---   *   ---
