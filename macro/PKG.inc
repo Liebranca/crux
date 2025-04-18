@@ -14,7 +14,8 @@
 
 if ~definite $non.loaded.PKG;
   $non.PKG.cclan equ $non;
-  $non.PKG.cpkg equ;
+  $non.PKG.cpkg  equ;
+  $non.PKG.foot  equ;
 
 
 ; ---   *   ---   *   ---
@@ -38,12 +39,14 @@ end macro;
 
 
 ; ---   *   ---   *   ---
-; begin/terminate package scope
+; begin package scope
 
 macro TITLE name;
 
   if ~definite $non.loaded.name;
 
+
+    ; collect info about current/parent package
     local parent;
     match any:path , $non.PKG.cclan;
       $non.PKG.cclan equ any.path:name;
@@ -55,24 +58,97 @@ macro TITLE name;
 
     end match;
 
+
+    ; begin new scope
     $non.PKG.cpkg equ name;
     $non.loaded.name = 1;
 
     $non.name:
     namespace $non.name;
-    %ICE  equ $non.name;
+    iceset    name;
 
     $pkginfo.OWN equ name;
     $pkginfo.PAR equ parent;
-    $pkginfo.fields equ;
+    $pkginfo.field equ;
+
+
+    ; generate %[name] F(args) selfwrap
+    match any , name;
+      macro $non.%#any:PA&;
+
+
+        ; need to set scope for call?
+        local unset;
+        unset equ 0;
+
+        match ice , %ICE;
+          if `any <> `ice;
+            iceset any;
+            unset  equ 1;
+
+          end if;
+
+        end match;
+
+        ; ^make call and unset if need
+        self PA;
+        match =1 , unset;
+          iceset ret;
+
+        end match;
+
+      end macro;
+
+    end match;
 
 end macro;
 
+
+; ---   *   ---   *   ---
+; Q methods to be run on EOF for [every] package
+; that includes the calling package
+;
+; list is walked through in reverse!
+
+macro FOOT proclist&;
+match ice , %ICE;
+
+  irp proc , proclist;
+    LIST.unshift $non.PKG.foot,ice:proc;
+
+  end irp;
+
+end match;
+end macro;
+
+
+; ---   *   ---   *   ---
+; ^terminate
+
 macro EOF;
-    end namespace;
-    restore %ICE;
+
+
+    ; make footer calls!
+    match calls , $non.PKG.foot;
+      irp c , calls;
+        match pkg =: proc , c;
+          iceset pkg;
+          self   proc();
+          iceset ret;
+
+        end match;
+
+      end irp;
+
+    end match;
+
+
+    ; ^then terminate scope proper
+    iceset  ret;
+    end     namespace;
     restore $non.PKG.cpkg;
     restore $non.PKG.cclan;
+
   end if;
 
 end macro;
@@ -97,7 +173,7 @@ end macro;
 
   TITLE     PKG;
 
-  VERSION   v0.01.3;
+  VERSION   v0.01.4;
   AUTHOR    'IBN-3DILA';
 
   EOF;
@@ -152,14 +228,12 @@ end macro;
 
 
 ; ---   *   ---   *   ---
-; print info for package!
+; print package field value
 
 macro $non.PKG.printx name,field;
 
-  display $0A,`name,$0A;
-
   irp f , field;
-    match value , name.$pkginfo.f;
+    match value , name.$pkg.f;
       display '  ',`f,' ',`value,$0A;
 
     end match;
@@ -169,20 +243,29 @@ macro $non.PKG.printx name,field;
 
 end macro;
 
+
+; ---   *   ---   *   ---
+; ^print all fields!
+
 macro $non.PKG.printall name;
-  match <list> , name.$pkginfo.field;
-    PKG.printx name,<list>;
+  display 'package ',`name,':',$0A;
+  match <list> , name.$pkg.field;
+    self printx(name,<list>);
 
   end match;
 
 end macro;
 
+
+; ---   *   ---   *   ---
+; ^entry
+
 macro $non.PKG.print name:;
   match any , name;
-    PKG.printall any;
+    self printall(any);
 
   else match any , PKG.cpkg;
-    PKG.printall any;
+    self printall(any);
 
   end match;
 

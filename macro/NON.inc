@@ -22,19 +22,69 @@ if ~definite $non.loaded;
 ; and so a package cannot find the macros defined
 ; within itself if the name is incomplete
 
-define @CAS $non;
-define %ICE @CAS;
+define %CAS  $non;
+define %ICE;
+define %THIS %CAS;
+
 macro self:PA&;
 
-  match ice , %ICE;
-    match =-=> proc (args) , PA;
-      ice.proc ice,args;
+  local this;
+  match this , %THIS;
+    match proc (args) , PA;
+      this.proc args;
 
-    else match =-=> proc () , PA;
-      ice.proc ice;
+    else match proc () , PA;
+      this.proc;
 
-    else match cas , @CAS;
-      %ICE equ cas.PA;
+    end match;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; ^set/unset instance (%ICE)
+
+macro iceset name:ret;
+
+  match =ret , name;
+    restore %ICE;
+    restore %THIS;
+
+  else match ice , name;
+    %ICE equ ice;
+
+    match cas , %CAS;
+      %THIS equ cas.ice;
+
+    else;
+      %THIS equ ice;
+
+    end match;
+
+  end match;
+
+end macro;
+
+
+; ---   *   ---   *   ---
+; set/unset current addressing space (%CAS)
+
+macro casset name:ret;
+
+  match =ret , name;
+    restore %CAS;
+    restore %CCI;
+
+  else match cas , name;
+    %CAS equ cas;
+
+    match ice , %ICE;
+      %THIS equ cas.ice;
+
+    else;
+      %THIS equ cas;
 
     end match;
 
@@ -88,7 +138,7 @@ end macro;
     <'PKG.inc','IMP.inc'>;
 
   MODULAR_DEP USE_EMITTER,1,\
-    <'TAB.inc','UID.inc','EMAN.inc'>;
+    <'LIST.inc','TAB.inc','UID.inc','EMAN.inc'>;
 
 
 ; ---   *   ---   *   ---

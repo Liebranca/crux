@@ -19,14 +19,14 @@
 
 
 ; ---   *   ---   *   ---
-; adds value to end of list
+; adds values to end of list
 
-macro LIST.push dst,e;
+macro LIST.push dst,ar&;
 
-  match <left> e , dst e;
+  match <left> e , dst ar;
     dst equ <left,e>;
   else;
-    dst equ <e>;
+    dst equ <ar>;
 
   end match;
 
@@ -36,12 +36,12 @@ end macro;
 ; ---   *   ---   *   ---
 ; ^adds to beg
 
-macro LIST.unshift dst,e&;
+macro LIST.unshift dst,ar&;
 
-  match <left> e , dst e;
+  match <left> e , dst ar;
     dst equ <e,left>;
   else;
-    dst equ <e>;
+    dst equ <ar>;
 
   end match;
 

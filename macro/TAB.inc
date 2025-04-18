@@ -21,7 +21,7 @@
 ; ---   *   ---   *   ---
 ; sets value on table
 
-macro TAB.set dst,key,e;
+macro set dst,key,e;
 
   match <any> , dst;
 
@@ -57,7 +57,7 @@ end macro;
 ; ---   *   ---   *   ---
 ; ^fetch
 
-macro TAB.get dst,src,key;
+macro get dst,src,key;
 
   match <any> , src;
 
@@ -87,7 +87,7 @@ end macro;
 ; ---   *   ---   *   ---
 ; ^removes value from tab!
 
-macro TAB.del dst,key;
+macro del dst,key;
 
   match <any> , dst;
 
@@ -124,7 +124,7 @@ end macro;
 ; [<] fill out dst with the passed value if present
 ;     else fall back to default value!
 
-macro TAB.defnit.inner dst,DP&;
+macro defnit.inner dst,DP&;
 
   ; unroll args
   local left;
@@ -177,9 +177,9 @@ end macro;
 ; ---   *   ---   *   ---
 ; ^interface
 
-macro TAB.defnit dst,default,passed:nullargs;
+macro defnit dst,default,passed:nullargs;
   match <D> , <default>;
-    TAB.defnit.inner dst,<D> <passed>;
+    $non.TAB.defnit.inner dst,<D> <passed>;
 
   end match;
 
